@@ -9,6 +9,7 @@ import {
 import { Theme } from "@repo/ui/theme";
 import type { PropsWithChildren } from "react";
 import TGShell from "./TGShell";
+import "./TGShell.css";
 
 export const metadata = {
   title: "Mantine Next.js template",
