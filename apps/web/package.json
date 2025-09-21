@@ -30,6 +30,7 @@
     "@tiptap/pm": "catalog:tiptap",
     "@tiptap/react": "catalog:tiptap",
     "@tiptap/starter-kit": "catalog:tiptap",
+    "@vercel/speed-insights": "^1.2.0",
     "dayjs": "catalog:",
     "embla-carousel-react": "catalog:",
     "lucide-react": "^0.544.0",
