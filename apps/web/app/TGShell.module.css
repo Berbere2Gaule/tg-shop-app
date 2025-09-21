@@ -40,3 +40,21 @@
 @media (max-width: 420px) {
   :root { --tg-mobile-width: 100vw; }
 }
+
+/* ==== Cadre "mobile" constant (même sur desktop) ==== */
+.tg-shell {
+  /* centre le téléphone virtuel */
+  display: grid;
+  place-items: center;
+  min-height: 100dvh;
+}
+
+/* zone scrollable qui respecte la hauteur stable Telegram */
+.tg-viewport {
+  width: min(var(--app-max-w, 420px), 100vw);
+  min-height: var(--tg-vh, 100dvh);
+  margin: 0 auto;
+  /* laisse passer le contenu sous le dock */
+  padding-bottom: calc(64px + var(--safe-bottom, env(safe-area-inset-bottom, 0px)));
+  box-sizing: border-box;
+}
