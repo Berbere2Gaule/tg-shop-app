@@ -1,0 +1,138 @@
+/* ---------- Overlay bas : contenu passe dessous ---------- */
+.root {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: grid;
+  place-items: center;
+  z-index: 60;
+  pointer-events: none; /* le Paper gère les clics */
+}
+
+/* ---------- Barre plein bas ---------- */
+.barFill {
+  /* tokens light */
+  --surface: var(--mantine-color-white);
+  --border: color-mix(in oklab, var(--mantine-color-gray-4), transparent 45%);
+  --shadow: 0 -6px 24px rgba(0,0,0,.08);
+
+  /* icônes & états */
+  --icon-inactive: var(--mantine-color-dimmed);
+  --active-icon: var(--mantine-color-dark-7); /* actif en light = gris foncé (lisible) */
+  --bg-gray-alpha: color-mix(in oklab, var(--icon-inactive), transparent 65%);
+
+  width: 100vw;
+  max-width: 100vw;
+  height: calc(64px + env(safe-area-inset-bottom));
+  padding: 8px 16px calc(8px + env(safe-area-inset-bottom));
+  border-radius: 0;                                /* carré comme l’exemple */
+  border-width: 1px 0 0 0 !important;              /* bordure en haut uniquement */
+  border-color: var(--border) !important;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  pointer-events: auto;
+}
+
+/* --------- Thème dark --------- */
+[data-mantine-color-scheme="dark"] .barFill {
+  --surface: color-mix(in oklab, var(--mantine-color-dark-7) 88%, transparent);
+  --border: color-mix(in oklab, var(--mantine-color-dark-4), transparent 32%);
+  --shadow: 0 -2px 16px rgba(0,0,0,.46);
+
+  --bg-gray-alpha: color-mix(in oklab, var(--mantine-color-dark-3), transparent 40%);
+  --active-icon: #fff; /* actif en dark = blanc */
+}
+
+/* ---------- Rangée ---------- */
+.row {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-auto-flow: column;
+  justify-content: space-between;
+  align-items: center; /* centrage vertical parfait */
+  gap: 12px;
+}
+
+/* =========================================================
+   Boutons (statiques) + RING interne (centre TRANSPARENT)
+   ========================================================= */
+.item {
+  /* Dégradé bleu du ring (fallbacks) */
+  --ring-a: var(--mantine-primary-color-6, #228be6);
+  --ring-b: var(--mantine-primary-color-4, #4dabf7);
+
+  /* Réglages ring */
+  --ring-outer-gap: 2px;   /* marge entre bord du disque gris et bord EXTERNE du ring */
+  --ring-thickness: 2px;   /* épaisseur visible de l’anneau */
+  --ring-soften: 0.8px;    /* adoucit le bord intérieur (anti crénelage) */
+
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  line-height: 0;
+  color: var(--icon-inactive) !important;
+  background: transparent;
+  transition: color .15s ease, background-color .15s ease;
+}
+
+/* Icône dimensionnée par CSS */
+.item :where(svg) {
+  display: block;
+  width: 22px;
+  height: 22px;
+  stroke: currentColor;
+  stroke-width: 2;
+  position: relative;
+  z-index: 3; /* au-dessus du ring */
+}
+
+/* Hover : fond gris, icône grise, aucun mouvement */
+.item:hover {
+  background: var(--bg-gray-alpha);
+  color: var(--icon-inactive) !important;
+}
+.item:active { transform: none !important; }
+
+/* Actif : fond gris + icône lisible + RING interne */
+.item.active {
+  background: var(--bg-gray-alpha);
+  color: var(--active-icon) !important;
+}
+
+/* RING interne (UN SEUL pseudo-élément) :
+   - le centre est 100% TRANSPARENT (on voit l’icône + le fond gris)
+   - anneau lissé via --ring-soften
+*/
+.item.active::before {
+  content: "";
+  position: absolute;
+  inset: var(--ring-outer-gap);     /* fixe le diamètre EXTERNE du ring */
+  border-radius: 999px;
+  pointer-events: none;
+
+  background: conic-gradient(from 0deg, var(--ring-a), var(--ring-b), var(--ring-a));
+
+  /* on creuse le centre => donut */
+  -webkit-mask: radial-gradient(
+    farthest-side,
+    transparent calc(100% - var(--ring-thickness) - var(--ring-soften)),
+    #000       calc(100% - var(--ring-thickness))
+  );
+          mask: radial-gradient(
+    farthest-side,
+    transparent calc(100% - var(--ring-thickness) - var(--ring-soften)),
+    #000       calc(100% - var(--ring-thickness))
+  );
+  z-index: 2;
+}
+
+/* ---------- XS ---------- */
+@media (max-width: 360px) {
+  .barFill { height: calc(60px + env(safe-area-inset-bottom)); }
+}
