@@ -12,7 +12,7 @@ import TGShell from "./TGShell";
 import "./TGShell.css";
 
 // Vercel analytics & speed insights (App Router)
-import { Analytics } from "@vercel/analytics/next";
+import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export const metadata = {
