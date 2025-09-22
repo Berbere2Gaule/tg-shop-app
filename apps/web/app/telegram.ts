@@ -3,7 +3,7 @@
 
 import { useEffect } from "react";
 
-/* Mesures CSS réelles des safe-areas iOS via “sondes” DOM */
+/* Sondes CSS iOS pour safe-area */
 function readIOSSafeBottom(): number {
   try {
     const el = document.createElement("div");
@@ -31,6 +31,7 @@ function readIOSSafeTop(): number {
   }
 }
 
+/* Heuristique iOS */
 function isLikelyIOS() {
   const ua = navigator.userAgent || "";
   return /iPhone|iPad|iPod/i.test(ua) || (/Mac/i.test(ua) && "ontouchend" in window);
@@ -41,26 +42,32 @@ export function useTelegramInit() {
     const tg = (window as any)?.Telegram?.WebApp;
     const html = document.documentElement;
 
-    const IOS_BOTTOM_BASELINE = 14; // petit confort au-dessus de la home bar
-    const IOS_TOP_BASELINE = 6;     // marge min. sous l’encoche
-    let maxBottomInset = 0;
+    // mêmes “baselines” que pour le dock (petit confort)
+    const IOS_BOTTOM_BASELINE = 14;
+    const IOS_TOP_BASELINE = 6;
+
+    let maxBottomInset = 0; // ↙️ on ne redescend jamais (anti "rebond")
     let maxTopInset = 0;
 
     const applyViewport = () => {
       const isIOS = (tg?.platform === "ios") || isLikelyIOS();
 
-      // Hauteur visible fournie par TG (quand dispo)
+      // Hauteur stable Telegram quand dispo
       const vh = tg?.viewportStableHeight || tg?.viewportHeight || window.innerHeight;
 
-      // Bas — delta innerHeight/vh + mesure CSS réelle
-      const fromVH = Math.max(0, window.innerHeight - vh);
+      // ---------- BAS (dock) : même logique qu'avant ----------
+      const fromVH = Math.max(0, window.innerHeight - vh); // delta = home bar iOS dans TG
       const fromEnvBottom = readIOSSafeBottom();
       let bottom = Math.max(fromVH, fromEnvBottom);
       if (isIOS) bottom = Math.max(bottom, IOS_BOTTOM_BASELINE);
       maxBottomInset = Math.max(maxBottomInset, bottom);
 
-      // Haut — mesure CSS réelle + baseline iOS
-      let top = readIOSSafeTop();
+      // ---------- HAUT (header) : on fait PAREIL ----------
+      // 1) mesure CSS
+      const fromEnvTop = readIOSSafeTop();
+      // 2) mesure “réelle” via visualViewport (iOS place souvent un offsetTop)
+      const fromVisual = Math.max(0, (window.visualViewport?.offsetTop ?? 0));
+      let top = Math.max(fromEnvTop, fromVisual);
       if (isIOS) top = Math.max(top, IOS_TOP_BASELINE);
       maxTopInset = Math.max(maxTopInset, top);
 
@@ -89,14 +96,14 @@ export function useTelegramInit() {
       tg?.onEvent?.("viewportChanged", applyViewport);
       tg?.onEvent?.("themeChanged", applyTheme);
 
-      // Hors Telegram : valeurs neutres
+      // Hors Telegram : valeurs neutres + baselines iOS
       if (!tg) {
-        const baselineBottom = isLikelyIOS() ? IOS_BOTTOM_BASELINE : 0;
-        const baselineTop = isLikelyIOS() ? IOS_TOP_BASELINE : 0;
+        const bottomBaseline = isLikelyIOS() ? IOS_BOTTOM_BASELINE : 0;
+        const topBaseline = isLikelyIOS() ? IOS_TOP_BASELINE : 0;
         html.style.setProperty("--tg-vh", `${window.innerHeight}px`);
-        html.style.setProperty("--dock-inset", `${baselineBottom}px`);
-        html.style.setProperty("--safe-bottom", `${baselineBottom}px`);
-        html.style.setProperty("--header-inset", `${baselineTop}px`);
+        html.style.setProperty("--dock-inset", `${bottomBaseline}px`);
+        html.style.setProperty("--safe-bottom", `${bottomBaseline}px`);
+        html.style.setProperty("--header-inset", `${topBaseline}px`);
         html.classList.add("tg-ready");
       }
 
