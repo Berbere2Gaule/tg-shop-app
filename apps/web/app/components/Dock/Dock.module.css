@@ -74,8 +74,8 @@
   --ring-b: var(--mantine-primary-color-4, #4dabf7);
 
   /* Réglages ring (légèrement plus gros) */
-  --ring-outer-gap: 2px;
-  --ring-thickness: 2px;
+  --ring-outer-gap: 3px;
+  --ring-thickness: 3px;
   --ring-soften: 0.8px;
 
   position: relative;
