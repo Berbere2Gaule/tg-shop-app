@@ -3,12 +3,12 @@
   position: fixed;
   left: 50%;
   transform: translateX(-50%);
-  bottom: 0; /* le dock colle toujours au bas de l’écran */
+  bottom: 0;                               /* ⬅️ colle au bord bas */
   width: min(var(--app-max-w, 420px), 100vw);
   display: grid;
   place-items: center;
   z-index: 60;
-  pointer-events: none; /* le Paper gère les clics */
+  pointer-events: none;                     /* le Paper gère les clics */
 }
 
 /* ---------- Barre plein bas (OPAQUE) ---------- */
@@ -24,16 +24,14 @@
   --bg-gray-alpha: color-mix(in oklab, var(--icon-inactive), transparent 65%);
 
   width: 100%;
-
-  /* ⬇️ la HAUTEUR inclut la safe area + bonus → le fond recouvre le bas */
-  height: calc(64px + var(--safe-bottom, 0px) + var(--homebar-gap, 0px));
-  padding: 8px 16px calc(8px + var(--safe-bottom, 0px) + var(--homebar-gap, 0px));
-
+  /* ⬇️ on ABSORBE la safe-area DEDANS : visuellement, le dock recouvre jusqu'en bas */
+  height: calc(64px + var(--safe-bottom, 0px));
+  padding: 8px 16px calc(8px + var(--safe-bottom, 0px));
   border-radius: 0;
-  border-width: 1px 0 0 0 !important;  /* bordure en haut uniquement */
+  border-width: 1px 0 0 0 !important;      /* bordure en haut uniquement */
   border-color: var(--border) !important;
 
-  /* 🧱 fond OPAQUE (pas de transparence/blur) */
+  /* 🧱 fond totalement OPAQUE */
   background-color: var(--surface) !important;
   background-image: none !important;
   backdrop-filter: none !important;
@@ -65,7 +63,7 @@
 }
 
 /* =========================================================
-   Boutons (statiques) + RING interne (centre TRANSPARENT)
+   Boutons + RING interne (centre TRANSPARENT)
    ========================================================= */
 .item {
   --ring-a: var(--mantine-primary-color-6, #228be6);
@@ -98,27 +96,26 @@
   z-index: 3;
 }
 
-/* Hover : fond gris, icône grise */
+/* Hover */
 .item:hover {
   background: var(--bg-gray-alpha);
   color: var(--icon-inactive) !important;
 }
 .item:active { transform: none !important; }
 
-/* Actif : fond gris + icône lisible */
+/* Actif */
 .item.active {
   background: var(--bg-gray-alpha);
   color: var(--active-icon) !important;
 }
 
-/* RING interne (centre 100% TRANSPARENT) */
+/* Ring interne = donut */
 .item.active::before {
   content: "";
   position: absolute;
   inset: var(--ring-outer-gap);
   border-radius: 999px;
   pointer-events: none;
-
   background: conic-gradient(from 0deg, var(--ring-a), var(--ring-b), var(--ring-a));
   -webkit-mask: radial-gradient(
     farthest-side,
@@ -136,5 +133,5 @@
 
 /* ---------- XS ---------- */
 @media (max-width: 360px) {
-  .barFill { height: calc(60px + var(--safe-bottom, 0px) + var(--homebar-gap, 0px)); }
+  .barFill { height: calc(60px + var(--safe-bottom, 0px)); }
 }

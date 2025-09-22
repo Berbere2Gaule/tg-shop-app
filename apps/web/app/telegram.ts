@@ -3,7 +3,7 @@
 
 import { useEffect } from "react";
 
-/** Sonde CSS pour lire réellement env(safe-area-inset-bottom) sur iOS */
+/** Mesure réellement env(safe-area-inset-bottom) sur iOS via une sonde DOM */
 function readIOSSafeBottom(): number {
   try {
     const el = document.createElement("div");
@@ -24,24 +24,24 @@ export function useTelegramInit() {
     const html = document.documentElement;
 
     const applyViewport = () => {
-      // Hauteur stable proposée par Telegram si dispo
-      const vh = tg?.viewportStableHeight || tg?.viewportHeight || window.innerHeight;
+      // 1) Hauteur stable Telegram si dispo
+      const vh =
+        tg?.viewportStableHeight ||
+        tg?.viewportHeight ||
+        window.innerHeight;
 
-      // Différence avec innerHeight (souvent = safe area dans TG iOS)
+      // 2) Safe area estimée par delta
       const fromVH = Math.max(0, window.innerHeight - vh);
 
-      // Mesure CSS iOS réelle (fallback fiable)
+      // 3) Safe area mesurée via env()
       const fromEnv = readIOSSafeBottom();
 
-      // Base de la safe area (sans bonus)
-      const safeBase = Math.max(fromVH, fromEnv);
-
-      // Petit confort 14px seulement s’il existe une safe area
-      const homebarGap = safeBase > 0 ? 14 : 0;
+      // 4) Valeur retenue
+      const safeBottom = Math.max(fromVH, fromEnv);
 
       html.style.setProperty("--tg-vh", `${vh}px`);
-      html.style.setProperty("--safe-bottom", `${safeBase}px`);
-      html.style.setProperty("--homebar-gap", `${homebarGap}px`);
+      html.style.setProperty("--safe-bottom", `${safeBottom}px`);
+      html.classList.add("tg-ready");
     };
 
     try {
@@ -52,11 +52,11 @@ export function useTelegramInit() {
       applyViewport();
       tg?.onEvent?.("viewportChanged", applyViewport);
 
-      // Hors Telegram : valeurs neutres (aucun gap)
       if (!tg) {
+        // Hors Telegram : valeurs neutres
         html.style.setProperty("--tg-vh", `${window.innerHeight}px`);
         html.style.setProperty("--safe-bottom", `0px`);
-        html.style.setProperty("--homebar-gap", `0px`);
+        html.classList.add("tg-ready");
       }
 
       return () => tg?.offEvent?.("viewportChanged", applyViewport);

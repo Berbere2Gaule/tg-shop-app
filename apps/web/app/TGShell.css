@@ -1,12 +1,12 @@
 /* apps/web/app/TGShell.css */
 
-/* Largeur visuelle + hauteur dock nominale */
+/* Largeur visuelle + hauteur Dock (constante) */
 :root {
   --tg-mobile-width: 420px;
   --dock-height: 64px;
 }
 
-/* centre la “vue mobile” sur desktop */
+/* Centre la “vue mobile” sur desktop */
 .shell {
   min-height: 100dvh;
   display: grid;
@@ -14,7 +14,7 @@
   background: var(--mantine-color-body);
 }
 
-/* viewport “téléphone” */
+/* Vue téléphone */
 .viewport {
   position: relative;
   width: min(var(--tg-mobile-width), 100vw);
@@ -24,41 +24,30 @@
   overflow: clip;
 }
 
-/* réserve la place du dock */
-.canvas {
-  min-height: 100%;
-  padding-bottom: calc(
-    var(--dock-height) +
-    var(--safe-bottom, env(safe-area-inset-bottom, 0px)) +
-    var(--homebar-gap, 0px)
-  );
-}
-
 /* Si Telegram expose une hauteur stable, on l’utilise */
 @supports (height: var(--tg-viewport-stable-height)) {
   .viewport { min-height: var(--tg-viewport-stable-height); }
 }
 
-@media (max-width: 420px) {
-  :root { --tg-mobile-width: 100vw; }
-}
-
-/* ==== Cadre mobile constant (même sur desktop) ==== */
+/* Cadre "mobile" constant (même sur desktop) */
 .tg-shell {
   display: grid;
   place-items: center;
   min-height: 100dvh;
 }
 
-/* zone scrollable qui respecte la hauteur stable Telegram */
+/* Zone scrollable qui réserve exactement la place du dock
+   = hauteur du dock (64) + safe-area dynamique */
 .tg-viewport {
   width: min(var(--app-max-w, 420px), 100vw);
   min-height: var(--tg-vh, 100dvh);
   margin: 0 auto;
-  /* réserve exactement la hauteur visible du dock (incluant safe area + bonus) */
-  padding-bottom: calc(
-    64px + var(--safe-bottom, 0px) + var(--homebar-gap, 0px)
-  );
+  padding-bottom: calc(64px + var(--safe-bottom, 0px));
   box-sizing: border-box;
   transition: padding-bottom .2s ease;
+}
+
+/* Petits écrans : largeur pleine */
+@media (max-width: 420px) {
+  :root { --tg-mobile-width: 100vw; }
 }
