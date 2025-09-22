@@ -3,7 +3,7 @@
   position: fixed;
   left: 50%;
   transform: translateX(-50%);
-  bottom: 0;  /* colle au bord; la safe-area est absorbée DEDANS */
+  bottom: 0; /* collé au bord physique du webview */
   width: min(var(--app-max-w, 420px), 100vw);
   display: grid;
   place-items: center;
@@ -13,7 +13,9 @@
 
 /* ---------- Barre plein bas (OPAQUE) ---------- */
 .barFill {
-  /* tokens light */
+  /* Couleur de surface :
+     - si Telegram fournit themeParams.bottom_bar_bg_color => --tg-surface (via telegram.ts)
+     - sinon fallback Mantine */
   --surface: var(--tg-surface, var(--mantine-color-white));
   --border: color-mix(in oklab, var(--mantine-color-gray-4), transparent 45%);
   --shadow: 0 -6px 24px rgba(0,0,0,.08);
@@ -24,13 +26,16 @@
   --bg-gray-alpha: color-mix(in oklab, var(--icon-inactive), transparent 65%);
 
   width: 100%;
-  height: calc(64px + var(--safe-bottom, 0px));             /* ⬅️ absorption */
-  padding: 8px 16px calc(8px + var(--safe-bottom, 0px));    /* ⬅️ absorption */
+  /* ⬇️ le dock GRANDIT pour englober la safe-area */
+  height: calc(64px + var(--safe-bottom, env(safe-area-inset-bottom, 0px)));
+  padding: 8px 16px calc(8px + var(--safe-bottom, env(safe-area-inset-bottom, 0px)));
+
   border-radius: 0;
-  border-width: 1px 0 0 0 !important;      /* bordure en haut uniquement */
+  border-width: 1px 0 0 0 !important;  /* bordure en haut uniquement */
   border-color: var(--border) !important;
 
-  background-color: var(--surface) !important; /* 🧱 OPAQUE */
+  /* 🧱 fond 100% OPAQUE (pas de transparence/blur) */
+  background-color: var(--surface) !important;
   background-image: none !important;
   backdrop-filter: none !important;
 
@@ -61,7 +66,7 @@
 }
 
 /* =========================================================
-   Boutons + RING interne (centre TRANSPARENT)
+   Boutons (statiques) + RING interne (centre TRANSPARENT)
    ========================================================= */
 .item {
   --ring-a: var(--mantine-primary-color-6, #228be6);
@@ -94,26 +99,27 @@
   z-index: 3;
 }
 
-/* Hover */
+/* Hover : fond gris, icône grise */
 .item:hover {
   background: var(--bg-gray-alpha);
   color: var(--icon-inactive) !important;
 }
 .item:active { transform: none !important; }
 
-/* Actif */
+/* Actif : fond gris + icône lisible */
 .item.active {
   background: var(--bg-gray-alpha);
   color: var(--active-icon) !important;
 }
 
-/* Ring interne = donut */
+/* RING interne (centre 100% TRANSPARENT) */
 .item.active::before {
   content: "";
   position: absolute;
   inset: var(--ring-outer-gap);
   border-radius: 999px;
   pointer-events: none;
+
   background: conic-gradient(from 0deg, var(--ring-a), var(--ring-b), var(--ring-a));
   -webkit-mask: radial-gradient(
     farthest-side,
@@ -131,5 +137,7 @@
 
 /* ---------- XS ---------- */
 @media (max-width: 360px) {
-  .barFill { height: calc(60px + var(--safe-bottom, 0px)); }
+  .barFill {
+    height: calc(60px + var(--safe-bottom, env(safe-area-inset-bottom, 0px)));
+  }
 }
