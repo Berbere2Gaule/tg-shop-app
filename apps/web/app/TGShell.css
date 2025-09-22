@@ -4,7 +4,7 @@
 :root {
   --tg-mobile-width: 420px;
   --dock-height: 72px;
-  --header-extra-gap: 6px; /* ⬅️ petit rab pour “abaisser un peu plus” le header */
+  --header-extra-gap: 14px; /* ⬅️ petit rab pour “abaisser un peu plus” le header */
 }
 
 /* Fond global (aligné avec Telegram si fourni) */
