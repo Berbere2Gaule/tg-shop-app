@@ -3,7 +3,7 @@
 
 import { useEffect } from "react";
 
-/* --- Petites sondes CSS pour les safe-areas iOS --- */
+/* --- Sondes CSS pour safe-areas iOS --- */
 function readIOSSafeBottom(): number {
   try {
     const el = document.createElement("div");
@@ -53,9 +53,13 @@ export function useTelegramInit() {
     const tg = (window as any)?.Telegram?.WebApp;
     const html = document.documentElement;
 
+    // ⬇️ utilitaires
+    const round = (n: number) => Math.max(0, Math.round(n));
+    const clamp = (n: number, min = 0, max = 9999) => Math.min(max, Math.max(min, n));
+
     // petits “conforts” pour iOS
     const IOS_BOTTOM_BASELINE = 8;
-    const IOS_TOP_BASELINE = 50;
+    const IOS_TOP_BASELINE = 44; // status bar iOS "classique" (monte si tu veux + de marge)
 
     // ⬇️ valeurs monotones, seedées depuis les var CSS existantes
     let maxBottomInset =
@@ -71,22 +75,28 @@ export function useTelegramInit() {
       // ----- BAS (dock) -----
       const fromVH = Math.max(0, window.innerHeight - vh); // souvent la home-bar
       const fromEnvBottom = readIOSSafeBottom();
-      let bottom = Math.max(fromVH, fromEnvBottom);
+      let bottom = round(Math.max(fromVH, fromEnvBottom));
       if (isIOS) bottom = Math.max(bottom, IOS_BOTTOM_BASELINE);
       maxBottomInset = Math.max(maxBottomInset, bottom);
 
       // ----- HAUT (header) -----
       const fromEnvTop = readIOSSafeTop();
       const fromVisual = Math.max(0, (window.visualViewport?.offsetTop ?? 0));
-      let top = Math.max(fromEnvTop, fromVisual);
+      let top = round(Math.max(fromEnvTop, fromVisual));
       if (isIOS) top = Math.max(top, IOS_TOP_BASELINE);
       maxTopInset = Math.max(maxTopInset, top);
 
       // expose aux styles
-      html.style.setProperty("--tg-vh", `${vh}px`);
-      html.style.setProperty("--dock-inset", `${maxBottomInset}px`);
-      html.style.setProperty("--safe-bottom", `${maxBottomInset}px`); // compat
-      html.style.setProperty("--header-inset", `${maxTopInset}px`);
+      html.style.setProperty("--tg-vh", `${round(vh)}px`);
+      html.style.setProperty("--dock-inset", `${clamp(maxBottomInset)}px`);
+      html.style.setProperty("--safe-bottom", `${clamp(maxBottomInset)}px`); // compat
+      html.style.setProperty("--header-inset", `${clamp(maxTopInset)}px`);
+
+      // (optionnel) petit plus sous l’encoche pour iOS seulement
+      if (isIOS && !html.style.getPropertyValue("--header-extra-gap")) {
+        html.style.setProperty("--header-extra-gap", "10px"); // ajuste 8–12px selon modèle
+      }
+
       html.classList.add("tg-ready");
     };
 
@@ -115,11 +125,13 @@ export function useTelegramInit() {
       tg?.onEvent?.("viewportChanged", computeStabilized);
       tg?.onEvent?.("themeChanged", applyTheme);
 
-      // iOS bouge offsetTop sur visualViewport
+      // iOS bouge offsetTop sur visualViewport → même handler partagé
+      const onVV = () => computeAndApply();
       const vv = window.visualViewport;
-      vv?.addEventListener("resize", computeAndApply, { passive: true });
-      vv?.addEventListener("scroll", computeAndApply, { passive: true });
-      window.addEventListener("orientationchange", computeStabilized, { passive: true });
+      vv?.addEventListener("resize", onVV, { passive: true });
+      vv?.addEventListener("scroll", onVV, { passive: true });
+      const onOrient = () => computeStabilized();
+      window.addEventListener("orientationchange", onOrient, { passive: true });
 
       // Hors Telegram
       if (!tg) {
@@ -129,6 +141,7 @@ export function useTelegramInit() {
         html.style.setProperty("--dock-inset", `${bottomBaseline}px`);
         html.style.setProperty("--safe-bottom", `${bottomBaseline}px`);
         html.style.setProperty("--header-inset", `${topBaseline}px`);
+        if (isLikelyIOS()) html.style.setProperty("--header-extra-gap", "10px");
         html.classList.add("tg-ready");
       }
 
@@ -136,9 +149,9 @@ export function useTelegramInit() {
         tg?.offEvent?.("viewportChanged", computeStabilized);
         tg?.offEvent?.("themeChanged", applyTheme);
         const vv2 = window.visualViewport;
-        vv2?.removeEventListener("resize", computeAndApply as any);
-        vv2?.removeEventListener("scroll", computeAndApply as any);
-        window.removeEventListener("orientationchange", computeStabilized as any);
+        vv2?.removeEventListener("resize", onVV);
+        vv2?.removeEventListener("scroll", onVV);
+        window.removeEventListener("orientationchange", onOrient);
       };
     } catch {
       /* noop */
