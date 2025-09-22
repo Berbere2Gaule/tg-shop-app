@@ -1,15 +1,14 @@
-/* ---------- Overlay bas : largeur = vue mobile, décalé au-dessus de l’encoche ---------- */
+/* ---------- Overlay bas : largeur = vue mobile ---------- */
 .root {
   position: fixed;
   left: 50%;
   transform: translateX(-50%);
-  bottom: var(--safe-bottom, env(safe-area-inset-bottom, 0px)); /* on décale, on ne change pas la hauteur */
+  bottom: 0; /* le dock colle toujours au bas de l’écran */
   width: min(var(--app-max-w, 420px), 100vw);
   display: grid;
   place-items: center;
   z-index: 60;
   pointer-events: none; /* le Paper gère les clics */
-  transition: bottom .2s ease; /* évite le “saut” lors de la 1ère mesure */
 }
 
 /* ---------- Barre plein bas (OPAQUE) ---------- */
@@ -25,8 +24,11 @@
   --bg-gray-alpha: color-mix(in oklab, var(--icon-inactive), transparent 65%);
 
   width: 100%;
-  height: 64px;                /* hauteur fixe */
-  padding: 8px 16px;           /* pas de padding-bottom “safe” ici */
+
+  /* ⬇️ la HAUTEUR inclut la safe area + bonus → le fond recouvre le bas */
+  height: calc(64px + var(--safe-bottom, 0px) + var(--homebar-gap, 0px));
+  padding: 8px 16px calc(8px + var(--safe-bottom, 0px) + var(--homebar-gap, 0px));
+
   border-radius: 0;
   border-width: 1px 0 0 0 !important;  /* bordure en haut uniquement */
   border-color: var(--border) !important;
@@ -134,5 +136,5 @@
 
 /* ---------- XS ---------- */
 @media (max-width: 360px) {
-  .barFill { height: 60px; }
+  .barFill { height: calc(60px + var(--safe-bottom, 0px) + var(--homebar-gap, 0px)); }
 }

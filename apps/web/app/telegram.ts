@@ -3,7 +3,7 @@
 
 import { useEffect } from "react";
 
-/** Mesure réellement env(safe-area-inset-bottom) côté iOS via une sonde DOM */
+/** Sonde CSS pour lire réellement env(safe-area-inset-bottom) sur iOS */
 function readIOSSafeBottom(): number {
   try {
     const el = document.createElement("div");
@@ -23,25 +23,25 @@ export function useTelegramInit() {
     const tg = (window as any)?.Telegram?.WebApp;
     const html = document.documentElement;
 
-    const HOME_BAR_GAP = 14; // petit confort au-dessus de la home-bar iOS
-
     const applyViewport = () => {
-      // 1) Hauteur “stable” fournie par Telegram si dispo
+      // Hauteur stable proposée par Telegram si dispo
       const vh = tg?.viewportStableHeight || tg?.viewportHeight || window.innerHeight;
 
-      // 2) Différence avec innerHeight (souvent = safe-area dans TG iOS)
+      // Différence avec innerHeight (souvent = safe area dans TG iOS)
       const fromVH = Math.max(0, window.innerHeight - vh);
 
-      // 3) Mesure CSS réelle d’iOS (fallback fiable)
+      // Mesure CSS iOS réelle (fallback fiable)
       const fromEnv = readIOSSafeBottom();
 
-      // 4) On garde le max + petit gap confort
-      const safeBottom = Math.max(fromVH, fromEnv) + HOME_BAR_GAP;
+      // Base de la safe area (sans bonus)
+      const safeBase = Math.max(fromVH, fromEnv);
+
+      // Petit confort 14px seulement s’il existe une safe area
+      const homebarGap = safeBase > 0 ? 14 : 0;
 
       html.style.setProperty("--tg-vh", `${vh}px`);
-      html.style.setProperty("--safe-bottom", `${safeBottom}px`);
-      // active les transitions côté CSS une fois la 1ère mesure appliquée
-      html.classList.add("tg-ready");
+      html.style.setProperty("--safe-bottom", `${safeBase}px`);
+      html.style.setProperty("--homebar-gap", `${homebarGap}px`);
     };
 
     try {
@@ -52,11 +52,11 @@ export function useTelegramInit() {
       applyViewport();
       tg?.onEvent?.("viewportChanged", applyViewport);
 
-      // Hors Telegram (ou si tg absent) : valeurs neutres + gap
+      // Hors Telegram : valeurs neutres (aucun gap)
       if (!tg) {
         html.style.setProperty("--tg-vh", `${window.innerHeight}px`);
-        html.style.setProperty("--safe-bottom", `${HOME_BAR_GAP}px`);
-        html.classList.add("tg-ready");
+        html.style.setProperty("--safe-bottom", `0px`);
+        html.style.setProperty("--homebar-gap", `0px`);
       }
 
       return () => tg?.offEvent?.("viewportChanged", applyViewport);
