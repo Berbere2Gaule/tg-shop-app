@@ -2,36 +2,14 @@
 :root {
   --tg-mobile-width: 420px;
 
-  /* <<< règle ICI la taille globale du dock (barre + boutons) */
-  --dock-height: 72px; /* ex: 72px au lieu de 64px */
+  /* taille globale du dock (barre + boutons) */
+  --dock-height: 72px;
 }
 
-/* Harmonise le fond général avec Telegram si dispo */
-html, body {
+/* Fond de page aligné sur Telegram si dispo */
+html,
+body {
   background: var(--tg-app-bg, var(--mantine-color-body));
-}
-
-/* Centre la “vue mobile” sur desktop */
-.shell {
-  min-height: 100dvh;
-  display: grid;
-  place-items: center;
-  background: var(--tg-app-bg, var(--mantine-color-body));
-}
-
-/* Vue téléphone */
-.viewport {
-  position: relative;
-  width: min(var(--tg-mobile-width), 100vw);
-  min-height: 100dvh;
-  margin: 0 auto;
-  border-radius: 0;
-  overflow: clip;
-}
-
-/* Hauteur stable Telegram si dispo */
-@supports (height: var(--tg-viewport-stable-height)) {
-  .viewport { min-height: var(--tg-viewport-stable-height); }
 }
 
 /* Cadre "mobile" constant (même sur desktop) */
@@ -46,15 +24,13 @@ html, body {
   width: min(var(--app-max-w, 420px), 100vw);
   min-height: var(--tg-vh, 100dvh);
   margin: 0 auto;
-
-  /* utilise la même variable partout */
+  /* même variable partout */
   padding-bottom: calc(var(--dock-height) + var(--dock-inset, var(--safe-bottom, 0px)));
-
   box-sizing: border-box;
   transition: padding-bottom .2s ease;
 }
 
-/* Petits écrans : largeur pleine (tu peux aussi réduire la hauteur si tu veux) */
+/* Petits écrans : largeur pleine */
 @media (max-width: 360px) {
   :root { --tg-mobile-width: 100vw; }
 }

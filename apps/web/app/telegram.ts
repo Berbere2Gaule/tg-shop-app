@@ -56,21 +56,35 @@ export function useTelegramInit() {
       // expose aux styles
       html.style.setProperty("--tg-vh", `${vh}px`);
       html.style.setProperty("--dock-inset", `${maxObservedInset}px`);
-      // pour compat avec anciens styles
+      // compat anciens styles
       html.style.setProperty("--safe-bottom", `${maxObservedInset}px`);
 
       html.classList.add("tg-ready");
+    };
+
+    // Aligne le fond avec le thème de Telegram (si fourni)
+    const applyTheme = () => {
+      const tp = tg?.themeParams ?? {};
+      const bg =
+        (tp as any).bg_color ||
+        (tp as any).secondary_bg_color ||
+        "";
+      if (bg) {
+        html.style.setProperty("--tg-app-bg", bg);
+      }
     };
 
     try {
       if (tg?.colorScheme) html.dataset.tgTheme = tg.colorScheme;
       if (tg?.platform) html.dataset.tgPlatform = tg.platform;
 
+      applyTheme();
       tg?.ready?.();
       tg?.expand?.();
 
       applyViewport();
       tg?.onEvent?.("viewportChanged", applyViewport);
+      tg?.onEvent?.("themeChanged", applyTheme);
 
       // Hors Telegram : valeurs neutres (+ petit confort iOS)
       if (!tg) {
@@ -81,7 +95,10 @@ export function useTelegramInit() {
         html.classList.add("tg-ready");
       }
 
-      return () => tg?.offEvent?.("viewportChanged", applyViewport);
+      return () => {
+        tg?.offEvent?.("viewportChanged", applyViewport);
+        tg?.offEvent?.("themeChanged", applyTheme);
+      };
     } catch {
       /* noop */
     }

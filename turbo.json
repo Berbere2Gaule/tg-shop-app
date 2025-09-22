@@ -1,19 +1,18 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
+  "globalEnv": ["TELEGRAM_BOT_TOKEN"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": [".next/**", "!.next/cache/**"],
-      "env": ["TELEGRAM_BOT_TOKEN"]
+      "outputs": [".next/**", "!.next/cache/**"]
     },
     "clean": { "cache": false, "persistent": true },
     "lint": { "dependsOn": ["^lint"] },
     "dev": {
       "cache": false,
-      "persistent": true,
-      "env": ["TELEGRAM_BOT_TOKEN"]
+      "persistent": true
     }
   }
 }
