@@ -13,7 +13,9 @@ function readIOSSafeTop(): number {
     const v = parseFloat(getComputedStyle(el).paddingTop || "0") || 0;
     el.remove();
     return v;
-  } catch { return 0; }
+  } catch {
+    return 0;
+  }
 }
 function readIOSSafeBottom(): number {
   try {
@@ -24,16 +26,16 @@ function readIOSSafeBottom(): number {
     const v = parseFloat(getComputedStyle(el).paddingBottom || "0") || 0;
     el.remove();
     return v;
-  } catch { return 0; }
+  } catch {
+    return 0;
+  }
 }
 function isLikelyIOS() {
   const ua = navigator.userAgent || "";
   return /iPhone|iPad|iPod/i.test(ua) || (/Mac/i.test(ua) && "ontouchend" in window);
 }
-function readCssVarPx(name: string): number {
-  const raw = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-  const n = parseFloat(raw);
-  return Number.isFinite(n) ? n : 0;
+function setCssVar(name: string, value: string | number) {
+  document.documentElement.style.setProperty(name, String(value));
 }
 
 export function useTelegramInit() {
@@ -41,56 +43,67 @@ export function useTelegramInit() {
     const tg = (window as any)?.Telegram?.WebApp;
     const html = document.documentElement;
 
-    // --------- constantes d’aisance (tu peux ajuster ici) ---------
-    const IOS_TOP_BASELINE = 90;   // ⇣ DESCENDRE la headbar (tu avais demandé 90)
-    const IOS_BOTTOM_BASELINE = 8; // ↓ rapprocher le dock de la barre iPhone
-    const HEADER_EXTRA_GAP = 10;   // petit rab visuel sous les boutons Telegram
-
-    const round = (n: number) => Math.max(0, Math.round(n));
-    const clamp = (n: number, min = 0, max = 9999) => Math.min(max, Math.max(min, n));
-
-    // seed pour éviter les “sauts”
-    let maxTopInset = readCssVarPx("--header-inset") || 0;
-    let maxBottomInset = readCssVarPx("--dock-inset") || readCssVarPx("--safe-bottom") || 0;
+    // ——— réglages d’aisance (tu peux ajuster) ———
+    const IOS_TOP_BASELINE = 90;   // descendre la headbar sur iOS
+    const IOS_BOTTOM_BASELINE = 8; // rapprocher le dock de la barre iPhone
+    const HEADER_EXTRA_GAP_IOS = 12;
+    const HEADER_EXTRA_GAP_DEFAULT = 6;
 
     const applyTheme = () => {
       const tp = tg?.themeParams ?? {};
-      const bg = (tp as any).bg_color || (tp as any).secondary_bg_color || "";
-      if (bg) html.style.setProperty("--tg-app-bg", bg);
-      if (tg?.colorScheme) html.dataset.mantineColorScheme = tg.colorScheme;
-      if (tg?.platform) html.dataset.tgPlatform = tg.platform; // "tdesktop" | "android" | "ios"...
+      const bg =
+        (tp as any).bg_color ||
+        (tp as any).secondary_bg_color ||
+        "";
+      if (bg) setCssVar("--tg-app-bg", bg);
+      if (tg?.colorScheme) html.setAttribute("data-mantine-color-scheme", tg.colorScheme);
+      if (tg?.platform) html.setAttribute("data-tg-platform", tg.platform);
+    };
+
+    const computeVH = () => {
+      // Sur desktop, viewportStableHeight peut être généreux → on prend le MIN
+      const cand = [
+        tg?.viewportHeight,
+        tg?.viewportStableHeight,
+        window.innerHeight,
+      ].filter((n): n is number => typeof n === "number" && Number.isFinite(n));
+      return cand.length ? Math.min(...cand) : window.innerHeight;
     };
 
     const applyInsets = () => {
       const isIOS = (tg?.platform === "ios") || isLikelyIOS();
 
-      const vh = tg?.viewportStableHeight || tg?.viewportHeight || window.innerHeight;
+      const vh = computeVH();
 
-      // BAS
+      // bas (home-indicator / barre)
       const fromVH = Math.max(0, window.innerHeight - vh);
       const fromEnvBottom = readIOSSafeBottom();
-      let bottom = round(Math.max(fromVH, fromEnvBottom));
+      let bottom = Math.max(fromVH, fromEnvBottom);
       if (isIOS) bottom = Math.max(bottom, IOS_BOTTOM_BASELINE);
-      maxBottomInset = Math.max(maxBottomInset, bottom);
 
-      // HAUT
+      // haut (encoche / barre Telegram)
       const fromEnvTop = readIOSSafeTop();
       const fromVisual = Math.max(0, (window.visualViewport?.offsetTop ?? 0));
-      let top = round(Math.max(fromEnvTop, fromVisual));
+      let top = Math.max(fromEnvTop, fromVisual);
       if (isIOS) top = Math.max(top, IOS_TOP_BASELINE);
-      maxTopInset = Math.max(maxTopInset, top);
 
       // expose
-      html.style.setProperty("--tg-vh", `${round(vh)}px`);
-      html.style.setProperty("--header-inset", `${clamp(maxTopInset)}px`);
-      html.style.setProperty("--dock-inset", `${clamp(maxBottomInset)}px`);
-      html.style.setProperty("--safe-bottom", `${clamp(maxBottomInset)}px`);
-      html.style.setProperty("--header-extra-gap", `${HEADER_EXTRA_GAP}px`);
+      setCssVar("--tg-vh", `${Math.round(vh)}px`);
+      setCssVar("--dock-inset", `${Math.round(bottom)}px`);
+      setCssVar("--safe-bottom", `${Math.round(bottom)}px`); // compat CSS existant
+      setCssVar("--header-inset", `${Math.round(top)}px`);
+
+      // paper du dock : taille de base (synchronisée avec la taille de tes boutons)
+      if (tg?.platform === "tdesktop") setCssVar("--dock-height", "70px");
+      else setCssVar("--dock-height", "70px");
+
+      // petit rab visuel sous les boutons Telegram
+      setCssVar("--header-extra-gap", isIOS ? `${HEADER_EXTRA_GAP_IOS}px` : `${HEADER_EXTRA_GAP_DEFAULT}px`);
 
       html.classList.add("tg-ready");
     };
 
-    const computeStabilized = () => {
+    const stabilized = () => {
       applyInsets();
       requestAnimationFrame(() => requestAnimationFrame(applyInsets));
     };
@@ -100,36 +113,41 @@ export function useTelegramInit() {
       tg?.ready?.();
       tg?.expand?.();
 
-      computeStabilized();
-      tg?.onEvent?.("viewportChanged", computeStabilized);
+      stabilized();
+      tg?.onEvent?.("viewportChanged", stabilized);
       tg?.onEvent?.("themeChanged", applyTheme);
 
+      // iOS/desktop: capter variations de visualViewport
       const onVV = () => applyInsets();
       const vv = window.visualViewport;
       vv?.addEventListener("resize", onVV, { passive: true });
       vv?.addEventListener("scroll", onVV, { passive: true });
-      const onOrient = () => computeStabilized();
+
+      const onOrient = () => stabilized();
       window.addEventListener("orientationchange", onOrient, { passive: true });
 
       // fallback hors Telegram
       if (!tg) {
         const isIOS = isLikelyIOS();
-        html.style.setProperty("--tg-vh", `${window.innerHeight}px`);
-        html.style.setProperty("--header-inset", `${isIOS ? IOS_TOP_BASELINE : 0}px`);
-        html.style.setProperty("--dock-inset", `${isIOS ? IOS_BOTTOM_BASELINE : 0}px`);
-        html.style.setProperty("--safe-bottom", `${isIOS ? IOS_BOTTOM_BASELINE : 0}px`);
-        html.style.setProperty("--header-extra-gap", `${HEADER_EXTRA_GAP}px`);
+        setCssVar("--tg-vh", `${window.innerHeight}px`);
+        setCssVar("--header-inset", isIOS ? `${IOS_TOP_BASELINE}px` : "0px");
+        setCssVar("--dock-inset", isIOS ? `${IOS_BOTTOM_BASELINE}px` : "0px");
+        setCssVar("--safe-bottom", isIOS ? `${IOS_BOTTOM_BASELINE}px` : "0px");
+        setCssVar("--dock-height", "60px");
+        setCssVar("--header-extra-gap", isIOS ? `${HEADER_EXTRA_GAP_IOS}px` : `${HEADER_EXTRA_GAP_DEFAULT}px`);
         html.classList.add("tg-ready");
       }
 
       return () => {
-        tg?.offEvent?.("viewportChanged", computeStabilized);
+        tg?.offEvent?.("viewportChanged", stabilized);
         tg?.offEvent?.("themeChanged", applyTheme);
         const vv2 = window.visualViewport;
         vv2?.removeEventListener("resize", onVV);
         vv2?.removeEventListener("scroll", onVV);
         window.removeEventListener("orientationchange", onOrient);
       };
-    } catch { /* noop */ }
+    } catch {
+      /* noop */
+    }
   }, []);
 }

@@ -1,60 +1,58 @@
 /* apps/web/app/TGShell.css */
 
-/* Largeur + hauteurs constantes */
+/* Largeurs / hauteurs par défaut */
 :root {
   --tg-mobile-width: 420px;
-  --dock-height: 72px;          /* ← taille de base de la “paper” du dock */
-  --header-extra-gap: 6px;       /* sera forcé à 10px par telegram.ts sur iOS */
+  --dock-height: 70px;      /* taille “paper” dock par défaut (mobile) */
+  --header-extra-gap: 6px;  /* sera mis à 12px sur iOS par telegram.ts */
 }
 
-/* Fond global (aligné avec Telegram si fourni) */
+/* Fond global + scroll global possible (la scrollbar est masquée plus bas) */
 html, body {
   height: 100%;
-  overflow: hidden;              /* ← force le scroll sur .tg-viewport (fixe la “scrollbar dark”) */
+  overflow: auto;
   background: var(--tg-app-bg, var(--mantine-color-body));
 }
 
-/* Cadre “mobile” constant */
+/* Cadre mobile */
 .tg-shell {
   display: grid;
   place-items: center;
   min-height: 100dvh;
 }
 
-/* Zone scrollable : on réserve header + dock (avec les insets dynamiques) */
+/* Zone scrollable : réserve header + dock via insets dynamiques */
 .tg-viewport {
   width: min(var(--app-max-w, 420px), 100vw);
   min-height: var(--tg-vh, 100dvh);
   margin: 0 auto;
 
   padding-top: calc(
-    var(--dock-height)
-    + var(--header-inset, env(safe-area-inset-top, 0px))
-    + var(--header-extra-gap, 0px)
+    var(--dock-height) +
+    var(--header-inset, env(safe-area-inset-top, 0px)) +
+    var(--header-extra-gap, 0px)
   );
   padding-bottom: calc(
-    var(--dock-height)
-    + var(--dock-inset, var(--safe-bottom, 0px))
+    var(--dock-height) +
+    var(--dock-inset, var(--safe-bottom, 0px))
   );
 
   box-sizing: border-box;
   transition: padding-top .2s ease, padding-bottom .2s ease;
 
-  /* Scroll uniquement ici */
+  /* Scroll uniquement ici, mais on le masque visuellement */
   overflow: auto;
-
-  /* Masque la scrollbar (Firefox, Chromium, WebKit) */
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+  -ms-overflow-style: none;     /* IE/Edge */
+  scrollbar-width: none;        /* Firefox */
 }
-.tg-viewport::-webkit-scrollbar { width: 0; height: 0; }
+.tg-viewport::-webkit-scrollbar { width: 0; height: 0; } /* Chrome/Safari */
 
-/* Télégram Desktop : réduire la “paper” du dock pour supprimer l’espace de scrollbar */
+/* Telegram Desktop : paper de dock plus fine pour supprimer l’espace de scrollbar */
 html[data-tg-platform="tdesktop"] :root {
-  --dock-height: 60px; /* essaie 56px si tu veux encore moins de hauteur */
+  --dock-height: 70px;
 }
 
-/* Petits écrans: largeur pleine */
+/* Petits écrans */
 @media (max-width: 360px) {
   :root { --tg-mobile-width: 100vw; }
 }

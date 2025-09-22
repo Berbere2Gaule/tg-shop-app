@@ -1,6 +1,6 @@
 /* apps/web/app/components/Dock/Dock.module.css */
 
-/* ---------- Overlay bas : largeur = vue mobile ---------- */
+/* wrapper du dock */
 .root {
   position: fixed;
   left: 50%;
@@ -10,33 +10,27 @@
   display: grid;
   place-items: center;
   z-index: 60;
-  pointer-events: none; /* le Paper gère les clics */
+  pointer-events: none;
   transition: bottom .2s ease;
 }
 
-/* ---------- Barre plein bas (OPAQUE) ---------- */
+/* “paper” du dock (opaque) */
 .barFill {
-  /* tokens light */
+  /* couleurs par défaut (light) */
   --surface: var(--mantine-color-white);
   --border: color-mix(in oklab, var(--mantine-color-gray-4), transparent 45%);
   --shadow: 0 -6px 24px rgba(0,0,0,.08);
 
-  /* icônes & états */
-  --icon-inactive: var(--mantine-color-dimmed);
-  --active-icon: var(--mantine-color-dark-7);
-  --bg-gray-alpha: color-mix(in oklab, var(--icon-inactive), transparent 65%);
-
   width: 100%;
 
-  /* Hauteur = dock + encoche dynamique (le contenu ne rajoute PAS l’encoche) */
-  height: calc(var(--dock-height, 64px) + var(--dock-inset, var(--safe-bottom, 0px)));
-
-  /* IMPORTANT: on ne remet plus l’encoche dans le padding-bottom */
+  /* Hauteur = paper de dock + encoche dynamique
+     ⚠️ on N’AJOUTE PAS l’encoche au padding-bottom (sinon icônes trop hautes) */
+  height: calc(var(--dock-height, 60px) + var(--dock-inset, var(--safe-bottom, 0px)));
   padding: 8px 20px 8px;
 
-  border-radius: 0;
   border-width: 1px 0 0 0 !important;
   border-color: var(--border) !important;
+  border-radius: 0;
 
   background-color: var(--surface) !important;
   background-image: none !important;
@@ -45,19 +39,19 @@
   box-shadow: var(--shadow);
   pointer-events: auto;
   isolation: isolate;
+
+  display: grid;
+  align-items: center;
 }
 
-/* --------- Thème dark : fond OPAQUE --------- */
+/* thème dark */
 [data-mantine-color-scheme="dark"] .barFill {
   --surface: var(--mantine-color-dark-7);
   --border: color-mix(in oklab, var(--mantine-color-dark-4), transparent 32%);
   --shadow: 0 -2px 16px rgba(0,0,0,.46);
-
-  --bg-gray-alpha: color-mix(in oklab, var(--mantine-color-dark-3), transparent 40%);
-  --active-icon: #fff;
 }
 
-/* ---------- Rangée ---------- */
+/* ligne d’icônes */
 .row {
   width: 100%;
   height: 100%;
@@ -68,13 +62,13 @@
   gap: 16px;
 }
 
-/* Boutons */
+/* bouton */
 .item {
   --ring-a: var(--mantine-primary-color-6, #228be6);
   --ring-b: var(--mantine-primary-color-4, #4dabf7);
   --ring-outer-gap: 3px;
   --ring-thickness: 3px;
-  --ring-soften: 0.8px;
+  --ring-soften: .8px;
 
   position: relative;
   display: flex;
@@ -86,12 +80,12 @@
 
   border-radius: 999px;
   line-height: 0;
-  color: var(--icon-inactive) !important;
+
+  color: var(--mantine-color-dimmed) !important;
   background: transparent;
   transition: color .15s ease, background-color .15s ease;
 }
 .item :where(svg) {
-  display: block;
   width: 22px;
   height: 22px;
   stroke: currentColor;
@@ -99,9 +93,12 @@
   position: relative;
   z-index: 3;
 }
-.item:hover { background: var(--bg-gray-alpha); color: var(--icon-inactive) !important; }
+.item:hover { background: color-mix(in oklab, var(--mantine-color-dimmed), transparent 65%); }
 .item:active { transform: none !important; }
-.item.active { background: var(--bg-gray-alpha); color: var(--active-icon) !important; }
+.item.active {
+  background: color-mix(in oklab, var(--mantine-color-dimmed), transparent 65%);
+  color: var(--mantine-color-white) !important;
+}
 .item.active::before {
   content: "";
   position: absolute;
@@ -123,10 +120,10 @@
   z-index: 2;
 }
 
-/* ---------- XS ---------- */
+/* XS */
 @media (max-width: 360px) {
-  :root { --dock-height: 60px; }
+  :root { --dock-height: 58px; }
   .row { gap: 12px; }
   .item { width: 46px; height: 46px; }
-  .item :where(svg) { width: 24px; height: 24px; }
+  .item :where(svg) { width: 20px; height: 20px; }
 }
