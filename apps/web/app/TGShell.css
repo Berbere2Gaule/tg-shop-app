@@ -1,9 +1,9 @@
-/* apps/web/app/TGShell.css */
-
 /* Largeur visuelle + hauteur Dock (constante) */
 :root {
   --tg-mobile-width: 420px;
-  --dock-height: 64px;
+
+  /* <<< règle ICI la taille globale du dock (barre + boutons) */
+  --dock-height: 72px; /* ex: 72px au lieu de 64px */
 }
 
 /* Harmonise le fond général avec Telegram si dispo */
@@ -41,17 +41,20 @@ html, body {
   min-height: 100dvh;
 }
 
-/* Réserve exactement la place du dock : 64 + inset dynamique */
+/* Réserve exactement la place du dock + safe-area dynamique */
 .tg-viewport {
   width: min(var(--app-max-w, 420px), 100vw);
   min-height: var(--tg-vh, 100dvh);
   margin: 0 auto;
-  padding-bottom: calc(64px + var(--dock-inset, var(--safe-bottom, 0px)));
+
+  /* utilise la même variable partout */
+  padding-bottom: calc(var(--dock-height) + var(--dock-inset, var(--safe-bottom, 0px)));
+
   box-sizing: border-box;
   transition: padding-bottom .2s ease;
 }
 
-/* Petits écrans : largeur pleine */
-@media (max-width: 420px) {
+/* Petits écrans : largeur pleine (tu peux aussi réduire la hauteur si tu veux) */
+@media (max-width: 360px) {
   :root { --tg-mobile-width: 100vw; }
 }

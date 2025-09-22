@@ -21,7 +21,6 @@ export default function Dock() {
 
   return (
     <Box className={s.root}>
-      {/* plein bas, full width, le contenu défile dessous */}
       <Paper className={s.barFill} radius={0} withBorder>
         <nav className={s.row} aria-label="Navigation principale">
           {items.map((it) => {
@@ -30,7 +29,7 @@ export default function Dock() {
               <ActionIcon
                 key={it.key}
                 aria-label={it.label}
-                size={46}
+                size={52}       // pour matcher la CSS (visuel piloté par CSS)
                 radius="xl"
                 variant="transparent"
                 className={`${s.item} ${isActive ? s.active : ""}`}
