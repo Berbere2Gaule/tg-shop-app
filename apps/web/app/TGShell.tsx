@@ -8,18 +8,12 @@ import "./TGShell.css";
 
 export default function TGShell({ children }: PropsWithChildren) {
   useTelegramInit();
-
   const style = { ["--app-max-w" as any]: "420px" } as CSSProperties;
 
   return (
     <div className="tg-shell" style={style}>
-      {/* Header fixé en haut, même largeur/hauteur que le dock */}
       <HeaderBar />
-
-      {/* Zone scrollable */}
       <main className="tg-viewport">{children}</main>
-
-      {/* Dock bas (inchangé) */}
       <Dock />
     </div>
   );

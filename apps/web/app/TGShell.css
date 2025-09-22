@@ -1,34 +1,33 @@
 :root {
   --tg-mobile-width: 420px;
-  --dock-height: 72px; /* ta valeur actuelle */
+  --dock-height: 72px; /* idem dock */
 }
 
-/* Fond global aligné Telegram si dispo */
+/* fond global synchronisé TG si dispo */
 html, body { background: var(--tg-app-bg, var(--mantine-color-body)); }
 
-/* Cadre "mobile" constant */
 .tg-shell {
   display: grid;
   place-items: center;
   min-height: 100dvh;
 }
 
-/* Vue scrollable */
+/* zone scrollable avec marges haut/bas réservées */
 .tg-viewport {
   width: min(var(--app-max-w, 420px), 100vw);
   min-height: var(--tg-vh, 100dvh);
   margin: 0 auto;
 
-  /* ⬇️ UNE SEULE LIGNE AJOUTÉE: réserve l’espace du header */
+  /* réserve l’espace du header (même hauteur que le dock) + notch */
   padding-top: calc(var(--dock-height) + var(--header-inset, env(safe-area-inset-top, 0px)));
 
-  /* ton padding-bottom existant pour le dock */
+  /* réserve l’espace du dock + home-bar iOS */
   padding-bottom: calc(var(--dock-height) + var(--dock-inset, var(--safe-bottom, 0px)));
 
   box-sizing: border-box;
   transition: padding-top .2s ease, padding-bottom .2s ease;
 
-  /* Optionnel: cacher la scrollbar desktop */
+  /* masque la scrollbar desktop */
   scrollbar-width: none;
 }
 .tg-viewport::-webkit-scrollbar { width: 0; height: 0; }

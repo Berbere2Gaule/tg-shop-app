@@ -24,7 +24,7 @@ export default function RootLayout({ children }: PropsWithChildren) {
   return (
     <html lang="fr" {...mantineHtmlProps}>
       <head>
-        <ColorSchemeScript />
+        <ColorSchemeScript defaultColorScheme="auto" />
         <link rel="shortcut icon" href="/favicon.svg" />
         <meta
           name="viewport"
@@ -33,7 +33,7 @@ export default function RootLayout({ children }: PropsWithChildren) {
       </head>
 
       <body>
-        <MantineProvider theme={Theme}>
+        <MantineProvider theme={Theme} defaultColorScheme="auto">
           <TGShell>{children}</TGShell>
         </MantineProvider>
         <SpeedInsights />
