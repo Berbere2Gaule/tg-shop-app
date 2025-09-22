@@ -1,3 +1,5 @@
+/* apps/web/app/TGShell.css */
+
 /* Largeur visuelle + hauteur Dock (constante) */
 :root {
   --tg-mobile-width: 420px;
@@ -19,15 +21,20 @@ body {
   min-height: 100dvh;
 }
 
-/* Réserve exactement la place du dock + safe-area dynamique */
+/* Vue/scaffold qui respecte les insets haut/bas + hauteur TG stable */
 .tg-viewport {
   width: min(var(--app-max-w, 420px), 100vw);
   min-height: var(--tg-vh, 100dvh);
   margin: 0 auto;
-  /* même variable partout */
+
+  /* protège l'encoche haut si Telegram n'affiche pas son header natif */
+  padding-top: var(--safe-top, env(safe-area-inset-top, 0px));
+
+  /* réserve exactement la place du dock + safe-area dynamique bas */
   padding-bottom: calc(var(--dock-height) + var(--dock-inset, var(--safe-bottom, 0px)));
+
   box-sizing: border-box;
-  transition: padding-bottom .2s ease;
+  transition: padding-bottom .2s ease, padding-top .2s ease;
 }
 
 /* Petits écrans : largeur pleine */
