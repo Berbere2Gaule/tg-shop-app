@@ -1,52 +1,33 @@
-/* Conteneur centré (mêmes dimensions que le dock) */
+/* Le header est un “jumeau” visuel du Dock, mais en haut */
+
 .root {
   position: fixed;
   left: 50%;
   transform: translateX(-50%);
-  top: var(--header-inset, env(safe-area-inset-top, 0px));
+  top: var(--header-inset, env(safe-area-inset-top, 0px)); /* ↖️ sous l’encoche iOS */
   width: min(var(--app-max-w, 420px), 100vw);
   z-index: 70;
-  pointer-events: none; /* le Paper capte les clics */
+  pointer-events: none; /* Le Paper interne gère les clics */
 }
 
-/* Peinture au-dessus du header (zone notch iOS) */
-.topPaint {
-  position: fixed;
-  inset: 0 0 auto 0;       /* plein écran en largeur, collé en haut */
-  height: var(--header-inset, env(safe-area-inset-top, 0px));
-  background: light-dark(var(--mantine-color-white), var(--mantine-color-dark-7));
-  z-index: 60;
-  pointer-events: none;
-}
-
-/* Visuel identique au dock mais en haut */
+/* Variables globales de surface du header (définies dans TGShell.css) */
 .barFill {
-  /* tokens light */
-  --surface: var(--mantine-color-white);
-  --border: color-mix(in oklab, var(--mantine-color-gray-4), transparent 45%);
-  --shadow: 0 6px 24px rgba(0,0,0,.08);
-
   width: 100%;
-  height: var(--dock-height);         /* ↙ même hauteur que le dock */
+  height: var(--dock-height); /* même hauteur que le dock */
   padding: 8px 12px;
   border-radius: 0;
-  border-width: 0 0 1px 0 !important; /* bordure en bas */
-  border-color: var(--border) !important;
+  border-width: 0 0 1px 0 !important;  /* bordure en bas uniquement */
+  border-color: var(--hdr-border) !important;
 
-  background: var(--surface) !important;   /* OPAQUE */
-  box-shadow: var(--shadow);
+  background-color: var(--hdr-surface) !important;  /* OPAQUE */
+  background-image: none !important;
+  backdrop-filter: none !important;
+
+  box-shadow: var(--hdr-shadow);
   pointer-events: auto;
   isolation: isolate;
 }
 
-/* Thème dark pour le Paper */
-:global(html[data-mantine-color-scheme="dark"]) .barFill {
-  --surface: var(--mantine-color-dark-7);
-  --border: color-mix(in oklab, var(--mantine-color-dark-4), transparent 32%);
-  --shadow: 0 2px 16px rgba(0,0,0,.46);
-}
-
-/* Ligne interne */
 .row {
   display: grid;
   grid-template-columns: 1fr auto;
@@ -55,49 +36,21 @@
   height: 100%;
 }
 
-/* Logos : on affiche/masque selon le thème Mantine */
-.logoWrap { display: inline-flex; align-items: center; gap: 8px; }
+/* Logo — on masque par CSS selon le thème Mantine (aucun JS) */
+.logoWrap { display: flex; align-items: center; gap: 8px; }
 .logo { height: 22px; display: block; }
-
 .logoLight { display: block; }
-.logoDark  { display: none; }
+.logoDark { display: none; }
 
-:global(html[data-mantine-color-scheme="dark"]) .logoLight { display: none; }
-:global(html[data-mantine-color-scheme="dark"]) .logoDark  { display: block; }
+:global([data-mantine-color-scheme="dark"]) .logoLight { display: none; }
+:global([data-mantine-color-scheme="dark"]) .logoDark  { display: block; }
 
-/* Actions (même gabarit que les boutons de la Home) */
+/* Actions (même taille que les boutons de la Home) */
 .actions { display: grid; grid-auto-flow: column; gap: 8px; }
 .btn { height: 36px; padding-inline: 14px; }
 
-/* ===== Switch thème "pill" ===== */
-.themeSwitch {
-  --h: 28px; --w: 52px; --pad: 3px;
-
-  width: var(--w);
-  height: var(--h);
-  border-radius: 999px;
-  border: 1px solid color-mix(in oklab, var(--mantine-color-gray-4), transparent 45%);
-  background: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6));
-  display: inline-flex;
-  align-items: center;
-  padding: var(--pad);
-  box-sizing: border-box;
-  cursor: pointer;
-}
-
-.knob {
-  width: calc(var(--h) - var(--pad) * 2);
-  height: calc(var(--h) - var(--pad) * 2);
-  border-radius: 999px;
-  display: grid;
-  place-items: center;
-  background: light-dark(var(--mantine-color-white), var(--mantine-color-dark-7));
-  color: light-dark(var(--mantine-color-dark-7), var(--mantine-color-yellow-3));
-  box-shadow: 0 1px 6px rgba(0,0,0,.15);
-  transform: translateX(0);
-  transition: transform .18s ease;
-}
-
-.themeSwitch[aria-pressed="true"] .knob {
-  transform: translateX(calc(var(--w) - var(--h)));
+/* Petit switch carré 36x36 (compact) */
+.switch {
+  width: 36px;
+  height: 36px;
 }

@@ -3,7 +3,7 @@
 
 import { useEffect } from "react";
 
-/** lit env(safe-area-inset-bottom) */
+/* Mesures CSS réelles des safe-areas iOS via “sondes” DOM */
 function readIOSSafeBottom(): number {
   try {
     const el = document.createElement("div");
@@ -17,8 +17,6 @@ function readIOSSafeBottom(): number {
     return 0;
   }
 }
-
-/** lit env(safe-area-inset-top) */
 function readIOSSafeTop(): number {
   try {
     const el = document.createElement("div");
@@ -43,44 +41,46 @@ export function useTelegramInit() {
     const tg = (window as any)?.Telegram?.WebApp;
     const html = document.documentElement;
 
-    const IOS_BOTTOM_BASELINE = 14; // confort au-dessus de la home bar
-    let maxBottom = 0;
-    let maxTop = 0;
+    const IOS_BOTTOM_BASELINE = 14; // petit confort au-dessus de la home bar
+    const IOS_TOP_BASELINE = 6;     // marge min. sous l’encoche
+    let maxBottomInset = 0;
+    let maxTopInset = 0;
 
     const applyViewport = () => {
       const isIOS = (tg?.platform === "ios") || isLikelyIOS();
 
+      // Hauteur visible fournie par TG (quand dispo)
       const vh = tg?.viewportStableHeight || tg?.viewportHeight || window.innerHeight;
 
-      // bottoms
-      const fromVHBottom = Math.max(0, window.innerHeight - vh);
+      // Bas — delta innerHeight/vh + mesure CSS réelle
+      const fromVH = Math.max(0, window.innerHeight - vh);
       const fromEnvBottom = readIOSSafeBottom();
-      let bottom = Math.max(fromVHBottom, fromEnvBottom);
+      let bottom = Math.max(fromVH, fromEnvBottom);
       if (isIOS) bottom = Math.max(bottom, IOS_BOTTOM_BASELINE);
-      maxBottom = Math.max(maxBottom, bottom);
+      maxBottomInset = Math.max(maxBottomInset, bottom);
 
-      // tops
-      const fromEnvTop = readIOSSafeTop();
-      maxTop = Math.max(maxTop, fromEnvTop);
+      // Haut — mesure CSS réelle + baseline iOS
+      let top = readIOSSafeTop();
+      if (isIOS) top = Math.max(top, IOS_TOP_BASELINE);
+      maxTopInset = Math.max(maxTopInset, top);
 
+      // Expose aux styles
       html.style.setProperty("--tg-vh", `${vh}px`);
-      html.style.setProperty("--dock-inset", `${maxBottom}px`);
-      html.style.setProperty("--safe-bottom", `${maxBottom}px`);
-      html.style.setProperty("--header-inset", `${maxTop}px`);
+      html.style.setProperty("--dock-inset", `${maxBottomInset}px`);
+      html.style.setProperty("--safe-bottom", `${maxBottomInset}px`); // compat
+      html.style.setProperty("--header-inset", `${maxTopInset}px`);
       html.classList.add("tg-ready");
     };
 
-    // aligne le fond avec le thème Telegram si fourni
     const applyTheme = () => {
       const tp = tg?.themeParams ?? {};
       const bg = (tp as any).bg_color || (tp as any).secondary_bg_color || "";
       if (bg) html.style.setProperty("--tg-app-bg", bg);
+      if (tg?.colorScheme) html.dataset.tgTheme = tg.colorScheme;
+      if (tg?.platform) html.dataset.tgPlatform = tg.platform;
     };
 
     try {
-      if (tg?.colorScheme) html.dataset.tgTheme = tg.colorScheme;
-      if (tg?.platform) html.dataset.tgPlatform = tg.platform;
-
       applyTheme();
       tg?.ready?.();
       tg?.expand?.();
@@ -89,13 +89,14 @@ export function useTelegramInit() {
       tg?.onEvent?.("viewportChanged", applyViewport);
       tg?.onEvent?.("themeChanged", applyTheme);
 
+      // Hors Telegram : valeurs neutres
       if (!tg) {
-        // hors Telegram : valeurs neutres
-        const bottomBase = isLikelyIOS() ? IOS_BOTTOM_BASELINE : 0;
+        const baselineBottom = isLikelyIOS() ? IOS_BOTTOM_BASELINE : 0;
+        const baselineTop = isLikelyIOS() ? IOS_TOP_BASELINE : 0;
         html.style.setProperty("--tg-vh", `${window.innerHeight}px`);
-        html.style.setProperty("--dock-inset", `${bottomBase}px`);
-        html.style.setProperty("--safe-bottom", `${bottomBase}px`);
-        html.style.setProperty("--header-inset", `0px`);
+        html.style.setProperty("--dock-inset", `${baselineBottom}px`);
+        html.style.setProperty("--safe-bottom", `${baselineBottom}px`);
+        html.style.setProperty("--header-inset", `${baselineTop}px`);
         html.classList.add("tg-ready");
       }
 

@@ -1,33 +1,58 @@
 :root {
   --tg-mobile-width: 420px;
-  --dock-height: 72px; /* idem dock */
+  --dock-height: 72px; /* ta valeur actuelle */
+
+  /* Surface + déco du header (utilisées aussi pour peindre la zone “notch”) */
+  --hdr-surface: var(--mantine-color-white);
+  --hdr-border: color-mix(in oklab, var(--mantine-color-gray-4), transparent 45%);
+  --hdr-shadow: 0 6px 24px rgba(0,0,0,.08);
 }
 
-/* fond global synchronisé TG si dispo */
+/* Fond global aligné sur Telegram si dispo */
 html, body { background: var(--tg-app-bg, var(--mantine-color-body)); }
 
+/* Thème dark : mêmes tokens que le Dock côté sombre */
+[data-mantine-color-scheme="dark"] {
+  --hdr-surface: var(--mantine-color-dark-7);
+  --hdr-border: color-mix(in oklab, var(--mantine-color-dark-4), transparent 32%);
+  --hdr-shadow: 0 2px 16px rgba(0,0,0,.46);
+}
+
+/* Cadre "mobile" constant */
 .tg-shell {
   display: grid;
   place-items: center;
   min-height: 100dvh;
 }
 
-/* zone scrollable avec marges haut/bas réservées */
+/* ⚠️ “Peinture” de la zone d’encoche au-dessus du header (iOS)
+   identique au fond du header pour que ça paraisse “collé” en haut */
+.tg-shell::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(var(--app-max-w, 420px), 100vw);
+  height: var(--header-inset, env(safe-area-inset-top, 0px));
+  background: var(--hdr-surface);
+  z-index: 69; /* juste sous le header */
+  pointer-events: none;
+}
+
+/* Zone scrollable avec réservations header + dock + insets dynamiques */
 .tg-viewport {
   width: min(var(--app-max-w, 420px), 100vw);
   min-height: var(--tg-vh, 100dvh);
   margin: 0 auto;
 
-  /* réserve l’espace du header (même hauteur que le dock) + notch */
-  padding-top: calc(var(--dock-height) + var(--header-inset, env(safe-area-inset-top, 0px)));
-
-  /* réserve l’espace du dock + home-bar iOS */
+  padding-top:    calc(var(--dock-height) + var(--header-inset, env(safe-area-inset-top, 0px)));
   padding-bottom: calc(var(--dock-height) + var(--dock-inset, var(--safe-bottom, 0px)));
 
   box-sizing: border-box;
   transition: padding-top .2s ease, padding-bottom .2s ease;
 
-  /* masque la scrollbar desktop */
+  /* Masquer la scrollbar sur desktop Telegram */
   scrollbar-width: none;
 }
 .tg-viewport::-webkit-scrollbar { width: 0; height: 0; }

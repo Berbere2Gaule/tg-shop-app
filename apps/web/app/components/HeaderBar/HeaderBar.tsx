@@ -1,49 +1,55 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button, Group, Paper, useMantineColorScheme } from "@mantine/core";
-import { IconMoon, IconSun } from "@tabler/icons-react";
+import { Paper, Group, Button, ActionIcon, Tooltip } from "@mantine/core";
+import { useMantineColorScheme } from "@mantine/core";
+import { Moon, Sun } from "lucide-react";
 import classes from "./HeaderBar.module.css";
 
-export default function HeaderBar() {
+/** Petit switch de thème — rendu seulement après le mount pour éviter tout mismatch SSR */
+function ThemeSwitch() {
   const { colorScheme, setColorScheme } = useMantineColorScheme();
-
-  // ✅ Empêche le mismatch: on fige l'état à "clair" avant le montage
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
-  const isDark = mounted ? colorScheme === "dark" : false;
-  const toggleTheme = () => setColorScheme(isDark ? "light" : "dark");
+  if (!mounted) {
+    // Placeholder neutre pour l’hydratation (pas d’aria dynamique avant le mount)
+    return <ActionIcon className={classes.switch} variant="default" aria-hidden="true" />;
+  }
+
+  const isDark = colorScheme === "dark";
+  const next = isDark ? "light" : "dark";
+  const label = isDark ? "Passer en clair" : "Passer en sombre";
 
   return (
-    <div className={classes.root} role="banner">
-      {/* Peint la zone notch (au-dessus du header) */}
-      <div className={classes.topPaint} aria-hidden />
+    <Tooltip label={label} withArrow>
+      <ActionIcon
+        className={classes.switch}
+        variant="default"
+        aria-label={label}
+        onClick={() => setColorScheme(next)}
+      >
+        {isDark ? <Sun size={16} /> : <Moon size={16} />}
+      </ActionIcon>
+    </Tooltip>
+  );
+}
 
+export default function HeaderBar() {
+  return (
+    <div className={classes.root} role="banner">
       <Paper className={classes.barFill} radius={0} withBorder>
         <div className={classes.row}>
-          {/* Logos : masqués par CSS selon le thème => pas de mismatch */}
-          <a className={classes.logoWrap} href="/" aria-label="Shop">
-            <img src="/logo-light.svg" alt="Shop" className={`${classes.logo} ${classes.logoLight}`} />
-            <img src="/logo-dark.svg"  alt="Shop" className={`${classes.logo} ${classes.logoDark}`} />
-          </a>
+          {/* Logo: 2 versions, masquées par CSS selon le thème ⇒ pas de mismatch */}
+          <div className={classes.logoWrap} aria-label="Shop">
+            <img src="/logo-light.svg" className={`${classes.logo} ${classes.logoLight}`} alt="Shop" />
+            <img src="/logo-dark.svg"  className={`${classes.logo} ${classes.logoDark}`}  alt="Shop" />
+          </div>
 
-          <Group className={classes.actions} gap="xs">
+          <Group className={classes.actions} gap={8}>
             <Button variant="default" className={classes.btn}>Se connecter</Button>
             <Button className={classes.btn}>Créer un compte</Button>
-
-            {/* Switch thème (rend stable avant montage) */}
-            <button
-              type="button"
-              className={classes.themeSwitch}
-              aria-pressed={isDark}
-              title={isDark ? "Passer en clair" : "Passer en sombre"}
-              onClick={toggleTheme}
-            >
-              <span className={classes.knob}>
-                {isDark ? <IconMoon size={16} stroke={2} /> : <IconSun size={16} stroke={2} />}
-              </span>
-            </button>
+            <ThemeSwitch />
           </Group>
         </div>
       </Paper>
