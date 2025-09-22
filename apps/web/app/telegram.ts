@@ -59,7 +59,7 @@ export function useTelegramInit() {
 
     // petits “conforts” pour iOS
     const IOS_BOTTOM_BASELINE = 8;
-    const IOS_TOP_BASELINE = 80; // status bar iOS "classique" (monte si tu veux + de marge)
+    const IOS_TOP_BASELINE = 90; // status bar iOS "classique" (monte si tu veux + de marge)
 
     // ⬇️ valeurs monotones, seedées depuis les var CSS existantes
     let maxBottomInset =
