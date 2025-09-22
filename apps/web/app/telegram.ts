@@ -3,7 +3,7 @@
 
 import { useEffect } from "react";
 
-/** Mesure réellement env(safe-area-inset-bottom) sur iOS via une sonde DOM */
+/** Sonde CSS pour env(safe-area-inset-bottom) – utile en fallback */
 function readIOSSafeBottom(): number {
   try {
     const el = document.createElement("div");
@@ -18,80 +18,85 @@ function readIOSSafeBottom(): number {
   }
 }
 
+/** Convertit une couleur Telegram hex (sans #) → #rrggbb */
+function tgHex(c?: string) {
+  if (!c) return undefined;
+  return c.startsWith("#") ? c : `#${c}`;
+}
+
 export function useTelegramInit() {
   useEffect(() => {
     const tg = (window as any)?.Telegram?.WebApp;
     const html = document.documentElement;
 
-    const isIOS =
-      /iPhone|iPad|iPod/i.test(navigator.userAgent) ||
-      tg?.platform === "ios";
+    // ————— Mesure robuste du "safe bottom" —————
+    const measure = () => {
+      const vv = window.visualViewport;
 
-    const DEFAULT_IOS_HOME_BAR = 44; // fallback standard (portrait)
-    const MIN_BELIEVABLE = 10;       // en-dessous => suspect
-
-    const applyViewport = () => {
-      const vh =
-        tg?.viewportStableHeight ||
-        tg?.viewportHeight ||
-        window.innerHeight;
-
-      const fromVH = Math.max(0, window.innerHeight - vh); // TG delta
-      const fromEnv = readIOSSafeBottom();                  // iOS env()
-
-      let safeBottom = Math.max(fromVH, fromEnv);
-
-      // 🔒 Fallback robuste pour Telegram iOS quand tout remonte 0
-      if (isIOS && safeBottom < MIN_BELIEVABLE) {
-        safeBottom = DEFAULT_IOS_HOME_BAR;
+      // 1) visualViewport : zone réellement masquée en bas (iOS fiable)
+      let fromVV = 0;
+      if (vv) {
+        fromVV = Math.max(
+          0,
+          Math.round(window.innerHeight - (vv.height + vv.offsetTop))
+        );
       }
 
-      html.style.setProperty("--tg-vh", `${vh}px`);
+      // 2) Différence innerHeight vs viewportStableHeight/viewportHeight
+      const vh = tg?.viewportStableHeight || tg?.viewportHeight || 0;
+      const fromVH = vh ? Math.max(0, window.innerHeight - vh) : 0;
+
+      // 3) Fallback CSS env()
+      const fromEnv = readIOSSafeBottom();
+
+      // 4) Prends le max des 3 (fiable sur iOS, neutre ailleurs)
+      const safeBottom = Math.max(fromVV, fromVH, fromEnv);
+
+      // On expose aussi la hauteur utile (pour .tg-viewport)
+      const usedVH = vh || window.innerHeight;
+
       html.style.setProperty("--safe-bottom", `${safeBottom}px`);
+      html.style.setProperty("--tg-vh", `${usedVH}px`);
       html.classList.add("tg-ready");
     };
 
     try {
-      // Thème Telegram -> CSS vars + hint au conteneur
-      const p = tg?.themeParams || {};
-      const bg = (p as any).bg_color as string | undefined;
-      const secondary = (p as any).secondary_bg_color as string | undefined;
-      const bottom = (p as any).bottom_bar_bg_color as string | undefined;
-
-      const appBg = bg || secondary;
-      const surface = bottom || secondary || bg;
-
-      if (appBg) {
-        html.style.setProperty("--tg-app-bg", appBg);
-        tg?.setBackgroundColor?.(appBg);
-        tg?.setHeaderColor?.("bg_color"); // ou "secondary_bg_color"
-      }
+      // Thème -> couleur de surface du dock si dispo (continuité visuelle TG)
+      const p = tg?.themeParams;
+      const surface =
+        tgHex(p?.bottom_bar_bg_color) ||
+        tgHex(p?.secondary_bg_color) ||
+        tgHex(p?.bg_color);
       if (surface) {
-        html.style.setProperty("--tg-surface", surface); // utilisé par le Dock
+        html.style.setProperty("--tg-surface", surface);
       }
-
-      if (tg?.colorScheme) html.dataset.tgTheme = tg.colorScheme;
 
       tg?.ready?.();
       tg?.expand?.();
 
-      applyViewport();
-      tg?.onEvent?.("viewportChanged", applyViewport);
-      window.addEventListener("resize", applyViewport, { passive: true });
+      // 1ère mesure
+      measure();
 
+      // Suivre les évolutions (clavier, gestures, etc.)
+      tg?.onEvent?.("viewportChanged", measure);
+      window.visualViewport?.addEventListener("resize", measure);
+      window.visualViewport?.addEventListener("scroll", measure);
+
+      // Hors Telegram : neutre (pas de home bar)
       if (!tg) {
-        // Hors Telegram : valeurs neutres
-        html.style.setProperty("--tg-vh", `${window.innerHeight}px`);
         html.style.setProperty("--safe-bottom", `0px`);
+        html.style.setProperty("--tg-vh", `${window.innerHeight}px`);
         html.classList.add("tg-ready");
       }
 
+      // Nettoyage
       return () => {
-        tg?.offEvent?.("viewportChanged", applyViewport);
-        window.removeEventListener("resize", applyViewport);
+        tg?.offEvent?.("viewportChanged", measure);
+        window.visualViewport?.removeEventListener("resize", measure);
+        window.visualViewport?.removeEventListener("scroll", measure);
       };
     } catch {
-      /* noop */
+      // noop
     }
   }, []);
 }
