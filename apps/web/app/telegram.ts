@@ -3,7 +3,7 @@
 
 import { useEffect } from "react";
 
-/** Mesure env(safe-area-inset-bottom) via une sonde DOM (iOS) */
+/** Probe env(safe-area-inset-bottom) in iOS webview */
 function readIOSSafeBottom(): number {
   try {
     const el = document.createElement("div");
@@ -18,7 +18,7 @@ function readIOSSafeBottom(): number {
   }
 }
 
-/** Mesure env(safe-area-inset-top) via une sonde DOM (iOS) */
+/** Probe env(safe-area-inset-top) in iOS webview */
 function readIOSSafeTop(): number {
   try {
     const el = document.createElement("div");
@@ -43,42 +43,45 @@ export function useTelegramInit() {
     const tg = (window as any)?.Telegram?.WebApp;
     const html = document.documentElement;
 
-    // Petit confort au-dessus de la home bar iOS (même si TG "oublie" la safe-area)
-    const IOS_BASELINE = 14;
+    // Baselines to avoid 0 on iOS when Telegram reports nothing
+    const IOS_BOTTOM_BASELINE = 14; // little comfort above the home bar
+    const IOS_TOP_BASELINE = 44;    // ensure we’re below the notch
+
     let maxObservedBottom = 0;
 
     const applyViewport = () => {
       const isIOS = tg?.platform === "ios" || isLikelyIOS();
 
-      // Hauteur visible côté TG (quand dispo)
+      // “Visible” height from Telegram when available
       const vh = tg?.viewportStableHeight || tg?.viewportHeight || window.innerHeight;
 
-      // Delta avec la fenêtre -> souvent la zone "home bar" côté iOS TG
+      // Often equals the iOS home bar area inside Telegram webview
       const fromVH = Math.max(0, window.innerHeight - vh);
 
-      // Mesures CSS réelles d’iOS
+      // CSS real measurements
       const bottomFromEnv = readIOSSafeBottom();
-      const safeTop = readIOSSafeTop();
+      const topFromEnv = readIOSSafeTop();
 
-      // Valeur bottom mesurée
+      // Bottom inset with iOS baseline and anti-rebound
       let bottomMeasured = Math.max(fromVH, bottomFromEnv);
-
-      // Baseline iOS pour éviter les retours à 0
-      if (isIOS) bottomMeasured = Math.max(bottomMeasured, IOS_BASELINE);
-
-      // Anti-rebond : on ne descend jamais
+      if (isIOS) bottomMeasured = Math.max(bottomMeasured, IOS_BOTTOM_BASELINE);
       maxObservedBottom = Math.max(maxObservedBottom, bottomMeasured);
 
-      // Expose aux styles
+      // Top inset (iOS only needs a baseline)
+      const topMeasured = isIOS ? Math.max(topFromEnv, IOS_TOP_BASELINE) : topFromEnv;
+
+      // Expose to CSS
       html.style.setProperty("--tg-vh", `${vh}px`);
       html.style.setProperty("--dock-inset", `${maxObservedBottom}px`);
-      html.style.setProperty("--safe-bottom", `${maxObservedBottom}px`); // compat
-      html.style.setProperty("--safe-top", `${safeTop}px`);
+      html.style.setProperty("--safe-bottom", `${maxObservedBottom}px`); // legacy compat
+
+      html.style.setProperty("--header-inset", `${topMeasured}px`);
+      html.style.setProperty("--safe-top", `${topMeasured}px`); // legacy compat
 
       html.classList.add("tg-ready");
     };
 
-    // Aligne le fond avec le thème de Telegram (si fourni) et force les teintes natives
+    // Align background/headers to the Telegram theme when possible
     const applyTheme = () => {
       const tp = tg?.themeParams ?? {};
       const bg =
@@ -87,7 +90,6 @@ export function useTelegramInit() {
         "";
       if (bg) html.style.setProperty("--tg-app-bg", bg);
 
-      // Conseillé par l’API pour harmoniser l’UI native (si supporté par le client)
       tg?.setBackgroundColor?.("bg_color");
       tg?.setHeaderColor?.("secondary_bg_color");
       tg?.setBottomBarColor?.("bg_color");
@@ -105,15 +107,16 @@ export function useTelegramInit() {
       tg?.onEvent?.("viewportChanged", applyViewport);
       tg?.onEvent?.("themeChanged", applyTheme);
 
-      // Hors Telegram : valeurs neutres (baseline iOS en bas, top via env)
+      // Outside Telegram: neutral values (with iOS baselines)
       if (!tg) {
-        const baselineBottom = isLikelyIOS() ? IOS_BASELINE : 0;
-        const topEnv = readIOSSafeTop();
+        const bottomBase = isLikelyIOS() ? IOS_BOTTOM_BASELINE : 0;
+        const topBase = isLikelyIOS() ? IOS_TOP_BASELINE : 0;
 
         html.style.setProperty("--tg-vh", `${window.innerHeight}px`);
-        html.style.setProperty("--dock-inset", `${baselineBottom}px`);
-        html.style.setProperty("--safe-bottom", `${baselineBottom}px`);
-        html.style.setProperty("--safe-top", `${topEnv}px`);
+        html.style.setProperty("--dock-inset", `${bottomBase}px`);
+        html.style.setProperty("--safe-bottom", `${bottomBase}px`);
+        html.style.setProperty("--header-inset", `${topBase}px`);
+        html.style.setProperty("--safe-top", `${topBase}px`);
         html.classList.add("tg-ready");
       }
 

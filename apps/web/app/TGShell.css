@@ -1,40 +1,39 @@
-/* apps/web/app/TGShell.css */
-
-/* Largeur visuelle + hauteur Dock (constante) */
+/* Largeur visuelle + hauteurs constantes (Dock & Header) */
 :root {
   --tg-mobile-width: 420px;
 
-  /* taille globale du dock (barre + boutons) */
-  --dock-height: 72px;
+  /* 🔧 règle ici les tailles de tes barres */
+  --header-height: 56px; /* hauteur de TON futur header */
+  --dock-height: 72px;   /* hauteur de TON dock (barre + boutons) */
 }
 
-/* Fond de page aligné sur Telegram si dispo */
+/* Fond général aligné sur Telegram si dispo */
 html,
 body {
   background: var(--tg-app-bg, var(--mantine-color-body));
 }
 
-/* Cadre "mobile" constant (même sur desktop) */
+/* Cadre "mobile" constant */
 .tg-shell {
   display: grid;
   place-items: center;
   min-height: 100dvh;
 }
 
-/* Vue/scaffold qui respecte les insets haut/bas + hauteur TG stable */
+/* Scaffold qui respecte les insets haut/bas + hauteurs fixes */
 .tg-viewport {
   width: min(var(--app-max-w, 420px), 100vw);
   min-height: var(--tg-vh, 100dvh);
   margin: 0 auto;
 
-  /* protège l'encoche haut si Telegram n'affiche pas son header natif */
-  padding-top: var(--safe-top, env(safe-area-inset-top, 0px));
+  /* En haut: espace = header fixe + inset iOS */
+  padding-top: calc(var(--header-height) + var(--header-inset, var(--safe-top, 0px)));
 
-  /* réserve exactement la place du dock + safe-area dynamique bas */
+  /* En bas: espace = dock fixe + inset iOS (anti-rebond géré côté JS) */
   padding-bottom: calc(var(--dock-height) + var(--dock-inset, var(--safe-bottom, 0px)));
 
   box-sizing: border-box;
-  transition: padding-bottom .2s ease, padding-top .2s ease;
+  transition: padding-top .2s ease, padding-bottom .2s ease;
 }
 
 /* Petits écrans : largeur pleine */
