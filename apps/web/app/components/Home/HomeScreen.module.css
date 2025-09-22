@@ -1,0 +1,86 @@
+.root {
+  padding: 12px;
+}
+
+/* ---------- HERO ---------- */
+.hero {
+  position: relative;
+  overflow: hidden;
+  padding: 16px;
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklab, var(--mantine-primary-color-7), transparent 0%)
+      0%,
+    color-mix(in oklab, var(--mantine-primary-color-6), transparent 8%)
+      100%
+  );
+  color: #fff;
+}
+
+.heroDecor {
+  position: absolute;
+  inset: -20%;
+  background:
+    radial-gradient(600px 240px at 0% 0%,
+      color-mix(in oklab, #ffffff, transparent 80%), transparent),
+    radial-gradient(360px 220px at 100% 100%,
+      color-mix(in oklab, #ffffff, transparent 85%), transparent);
+  pointer-events: none;
+  opacity: .5;
+}
+
+.heroTitle { margin: 0 0 2px; }
+.heroSubtitle { opacity: .88; }
+
+/* ---------- CAT STRIP ---------- */
+.cats {
+  display: grid;
+  grid-auto-flow: column;
+  gap: 10px;
+  overflow-x: auto;
+  margin-top: 12px;
+  padding-bottom: 2px;
+  scrollbar-width: none;
+}
+.cats::-webkit-scrollbar { display: none; }
+
+.cat {
+  display: inline-grid;
+  grid-template-columns: 28px 1fr;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: color-mix(in oklab, var(--mantine-color-dark-5), transparent 70%);
+  border: 1px solid color-mix(in oklab, var(--mantine-color-gray-5), transparent 70%);
+  text-decoration: none;
+  color: inherit;
+  white-space: nowrap;
+}
+.cat:hover { background: color-mix(in oklab, var(--mantine-color-gray-4), transparent 70%); }
+:where([data-mantine-color-scheme="dark"]) .cat {
+  background: color-mix(in oklab, var(--mantine-color-dark-4), transparent 50%);
+  border-color: color-mix(in oklab, var(--mantine-color-dark-2), transparent 20%);
+}
+
+.catEmoji { font-size: 18px; line-height: 1; }
+.catLabel { font-weight: 600; }
+
+/* ---------- PRODUCT CARD ---------- */
+.product { display: grid; grid-template-rows: auto auto auto; }
+
+.thumb {
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  border-radius: 10px;
+  background:
+    radial-gradient(120% 100% at 0% 0%,
+      color-mix(in oklab, var(--mantine-primary-color-4), transparent 20%), transparent),
+    linear-gradient(135deg,
+      color-mix(in oklab, var(--mantine-primary-color-6), transparent 10%),
+      color-mix(in oklab, var(--mantine-primary-color-3), transparent 30%));
+}
+
+.info { margin-top: 8px; }
+.price { font-feature-settings: "tnum" 1, "lnum" 1; }
+.note { background: color-mix(in oklab, var(--mantine-color-yellow-3), transparent 80%); }

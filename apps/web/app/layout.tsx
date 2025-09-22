@@ -16,8 +16,8 @@ import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export const metadata = {
-  title: "Mantine Next.js template",
-  description: "I am using Mantine with Next.js!",
+  title: "Shop - Deliveroo",
+  description: "à rédiger",
 };
 
 export default function RootLayout({ children }: PropsWithChildren) {

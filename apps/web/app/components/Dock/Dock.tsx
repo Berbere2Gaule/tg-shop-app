@@ -1,23 +1,35 @@
 "use client";
 
-import React, { useState, type ReactNode } from "react";
+import React, { type ReactNode } from "react";
 import { Paper, ActionIcon, Box } from "@mantine/core";
 import { Megaphone, ShoppingCart, Store, Package, User } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import s from "./Dock.module.css";
 
 type Tab = "promo" | "cart" | "shop" | "orders" | "account";
-type TabItem = { key: Tab; label: string; icon: ReactNode };
+type TabItem = { key: Tab; label: string; icon: ReactNode; href: string };
 
 const items: TabItem[] = [
-  { key: "promo",  label: "Promos",    icon: <Megaphone /> },
-  { key: "cart",   label: "Panier",    icon: <ShoppingCart /> },
-  { key: "shop",   label: "Shop",      icon: <Store /> },
-  { key: "orders", label: "Commandes", icon: <Package /> },
-  { key: "account",label: "Compte",    icon: <User /> },
+  { key: "promo",   label: "Promos",    icon: <Megaphone />,     href: "/promo" },
+  { key: "cart",    label: "Panier",    icon: <ShoppingCart />,  href: "/cart" },
+  { key: "shop",    label: "Shop",      icon: <Store />,         href: "/" },        // ou "/shop"
+  { key: "orders",  label: "Commandes", icon: <Package />,       href: "/orders" },
+  { key: "account", label: "Compte",    icon: <User />,          href: "/account" },
 ];
 
+function keyFromPath(pathname: string): Tab {
+  if (pathname.startsWith("/promo"))   return "promo";
+  if (pathname.startsWith("/cart"))    return "cart";
+  if (pathname === "/" || pathname.startsWith("/shop")) return "shop";
+  if (pathname.startsWith("/orders"))  return "orders";
+  if (pathname.startsWith("/account")) return "account";
+  return "shop";
+}
+
 export default function Dock() {
-  const [active, setActive] = useState<Tab>("shop");
+  const pathname = usePathname();
+  const active = keyFromPath(pathname || "/");
 
   return (
     <Box className={s.root}>
@@ -29,11 +41,14 @@ export default function Dock() {
               <ActionIcon
                 key={it.key}
                 aria-label={it.label}
-                size={52}       // pour matcher la CSS (visuel piloté par CSS)
+                aria-current={isActive ? "page" : undefined}
+                size={52}                  // visuel piloté par la CSS
                 radius="xl"
                 variant="transparent"
                 className={`${s.item} ${isActive ? s.active : ""}`}
-                onClick={() => setActive(it.key)}
+                component={Link}           // Mantine supporte le polymorphisme
+                href={it.href}
+                prefetch={false}           // optionnel
               >
                 {it.icon}
               </ActionIcon>
