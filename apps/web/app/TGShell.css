@@ -1,56 +1,38 @@
-/* apps/web/app/TGShell.css */
-
-/* Variables globales */
 :root {
   --tg-mobile-width: 420px;
-  --dock-height: 72px;     /* taille de la barre (hors encoche) */
-  --header-h: 56px;        /* hauteur "utile" du header (hors encoche) */
+  --dock-height: 72px; /* ta valeur actuelle */
 }
 
-/* Fond aligné sur Telegram si dispo */
+/* Fond global aligné Telegram si dispo */
 html, body { background: var(--tg-app-bg, var(--mantine-color-body)); }
 
-/* Cadre "mobile" constant (même sur desktop) */
+/* Cadre "mobile" constant */
 .tg-shell {
   display: grid;
   place-items: center;
   min-height: 100dvh;
 }
 
-/* Colonne scrollable qui réserve la place du dock */
+/* Vue scrollable */
 .tg-viewport {
   width: min(var(--app-max-w, 420px), 100vw);
   min-height: var(--tg-vh, 100dvh);
   margin: 0 auto;
+
+  /* ⬇️ UNE SEULE LIGNE AJOUTÉE: réserve l’espace du header */
+  padding-top: calc(var(--dock-height) + var(--header-inset, env(safe-area-inset-top, 0px)));
+
+  /* ton padding-bottom existant pour le dock */
   padding-bottom: calc(var(--dock-height) + var(--dock-inset, var(--safe-bottom, 0px)));
+
   box-sizing: border-box;
-  transition: padding-bottom .2s ease;
+  transition: padding-top .2s ease, padding-bottom .2s ease;
 
-  /* cacher visuellement la scrollbar (le scroll fonctionne) */
-  -ms-overflow-style: none;      /* IE/Edge */
-  scrollbar-width: none;         /* Firefox */
+  /* Optionnel: cacher la scrollbar desktop */
+  scrollbar-width: none;
 }
-.tg-viewport::-webkit-scrollbar { display: none; } /* WebKit */
+.tg-viewport::-webkit-scrollbar { width: 0; height: 0; }
 
-/* Header sticky : il englobe l’encoche via padding-top = --safe-top */
-.tg-header {
-  position: sticky;
-  top: 0;
-  z-index: 40;
-  background: var(--tg-app-bg, var(--mantine-color-body));
-  border-bottom: 1px solid color-mix(in oklab, var(--mantine-color-gray-4), transparent 60%);
-  padding: calc(var(--safe-top, 0px)) var(--mantine-spacing-md) 0 var(--mantine-spacing-md);
-  min-height: calc(var(--header-h) + var(--safe-top, 0px));
-  display: grid;
-  align-items: center;
+@media (max-width: 360px) {
+  :root { --tg-mobile-width: 100vw; }
 }
-.tg-headerRow {
-  height: var(--header-h);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-/* Petits écrans : largeur pleine */
-@media (max-width: 360px) { :root { --tg-mobile-width: 100vw; } }

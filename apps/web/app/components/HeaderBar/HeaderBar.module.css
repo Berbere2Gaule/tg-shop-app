@@ -1,0 +1,59 @@
+.root {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  top: var(--header-inset, env(safe-area-inset-top, 0px)); /* ↖️ passe sous l’encoche iOS si présent */
+  width: min(var(--app-max-w, 420px), 100vw);
+  z-index: 70;
+  pointer-events: none; /* le Paper interne gère les clics */
+}
+
+/* Visuel identique au dock mais en haut */
+.barFill {
+  /* tokens light */
+  --surface: var(--mantine-color-white);
+  --border: color-mix(in oklab, var(--mantine-color-gray-4), transparent 45%);
+  --shadow: 0 6px 24px rgba(0,0,0,.08);
+
+  width: 100%;
+  height: var(--dock-height);      /* ↙️ exactement la même hauteur que le dock */
+  padding: 8px 12px;
+  border-radius: 0;
+  border-width: 0 0 1px 0 !important;   /* bordure en bas */
+  border-color: var(--border) !important;
+
+  background-color: var(--surface) !important; /* OPAQUE */
+  background-image: none !important;
+  backdrop-filter: none !important;
+
+  box-shadow: var(--shadow);
+  pointer-events: auto;
+  isolation: isolate;
+}
+
+/* Thème dark */
+[data-mantine-color-scheme="dark"] .barFill {
+  --surface: var(--mantine-color-dark-7);
+  --border: color-mix(in oklab, var(--mantine-color-dark-4), transparent 32%);
+  --shadow: 0 2px 16px rgba(0,0,0,.46);
+}
+
+/* Ligne interne: logo à gauche, actions à droite */
+.row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 8px;
+  height: 100%;
+}
+
+/* Logo: 2 images, on masque selon le thème => zéro mismatch d’hydratation */
+.logoWrap { display: flex; align-items: center; gap: 8px; }
+.logo { height: 22px; }
+
+:global([data-mantine-color-scheme="dark"]) .logoLight { display: none; }
+:global([data-mantine-color-scheme="light"]) .logoDark { display: none; }
+
+/* Actions (même taille que les boutons de la Home) */
+.actions { display: grid; grid-auto-flow: column; gap: 8px; }
+.btn { height: 36px; padding-inline: 14px; }
