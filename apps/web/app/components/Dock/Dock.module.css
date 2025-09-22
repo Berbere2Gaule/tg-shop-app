@@ -1,9 +1,11 @@
+/* apps/web/app/components/Dock/Dock.module.css */
+
 /* ---------- Overlay bas : largeur = vue mobile ---------- */
 .root {
   position: fixed;
   left: 50%;
   transform: translateX(-50%);
-  bottom: 0; /* on ne relève plus, la place de l'encoche est absorbée par la hauteur */
+  bottom: 0; /* la place de l'encoche est absorbée par la hauteur */
   width: min(var(--app-max-w, 420px), 100vw);
   display: grid;
   place-items: center;
@@ -25,16 +27,13 @@
   --bg-gray-alpha: color-mix(in oklab, var(--icon-inactive), transparent 65%);
 
   width: 100%;
-
-  /* Hauteur = dock + encoche dynamique mesurée par le hook */
+  /* Hauteur = dock + encoche dynamique */
   height: calc(var(--dock-height, 64px) + var(--dock-inset, var(--safe-bottom, 0px)));
   padding: 8px 20px calc(8px + var(--dock-inset, var(--safe-bottom, 0px)));
-
   border-radius: 0;
-  border-width: 1px 0 0 0 !important;       /* bordure en haut uniquement */
+  border-width: 1px 0 0 0 !important;
   border-color: var(--border) !important;
 
-  /* 🧱 fond OPAQUE */
   background-color: var(--surface) !important;
   background-image: none !important;
   backdrop-filter: none !important;
@@ -62,18 +61,15 @@
   grid-auto-flow: column;
   justify-content: space-between;
   align-items: center;
-  gap: 16px; /* un peu plus d'air quand on grossit les boutons */
+  gap: 16px;
 }
 
 /* =========================================================
    Boutons + RING interne (centre TRANSPARENT)
    ========================================================= */
 .item {
-  /* dégradé du ring */
   --ring-a: var(--mantine-primary-color-6, #228be6);
   --ring-b: var(--mantine-primary-color-4, #4dabf7);
-
-  /* Réglages ring (légèrement plus gros) */
   --ring-outer-gap: 3px;
   --ring-thickness: 3px;
   --ring-soften: 0.8px;
@@ -83,7 +79,6 @@
   align-items: center;
   justify-content: center;
 
-  /* <<< taille du bouton (avant 44px) */
   width: 52px;
   height: 52px;
 
@@ -94,7 +89,6 @@
   transition: color .15s ease, background-color .15s ease;
 }
 
-/* Icône */
 .item :where(svg) {
   display: block;
   width: 22px;
@@ -105,20 +99,11 @@
   z-index: 3;
 }
 
-/* Hover : fond gris, icône grise */
-.item:hover {
-  background: var(--bg-gray-alpha);
-  color: var(--icon-inactive) !important;
-}
+.item:hover { background: var(--bg-gray-alpha); color: var(--icon-inactive) !important; }
 .item:active { transform: none !important; }
 
-/* Actif : fond gris + icône lisible */
-.item.active {
-  background: var(--bg-gray-alpha);
-  color: var(--active-icon) !important;
-}
+.item.active { background: var(--bg-gray-alpha); color: var(--active-icon) !important; }
 
-/* RING interne (centre 100% TRANSPARENT) */
 .item.active::before {
   content: "";
   position: absolute;
@@ -137,15 +122,13 @@
     transparent calc(100% - var(--ring-thickness) - var(--ring-soften)),
     #000       calc(100% - var(--ring-thickness))
   );
-
   filter: drop-shadow(0 0 2px color-mix(in oklab, var(--ring-a), transparent 60%));
   z-index: 2;
 }
 
 /* ---------- XS ---------- */
 @media (max-width: 360px) {
-  :root { --dock-height: 60px; } /* réduit un peu si écran minuscule */
-
+  :root { --dock-height: 60px; }
   .row { gap: 12px; }
   .item { width: 46px; height: 46px; }
   .item :where(svg) { width: 24px; height: 24px; }

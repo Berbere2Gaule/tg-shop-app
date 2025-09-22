@@ -1,5 +1,7 @@
+// apps/web/app/layout.tsx
 import "@repo/ui/global.css";
 import { Theme } from "@repo/ui/theme";
+
 import {
   ColorSchemeScript,
   MantineProvider,
@@ -20,7 +22,7 @@ export const metadata = {
 
 export default function RootLayout({ children }: PropsWithChildren) {
   return (
-    <html lang="en" {...mantineHtmlProps}>
+    <html lang="fr" {...mantineHtmlProps}>
       <head>
         <ColorSchemeScript />
         <link rel="shortcut icon" href="/favicon.svg" />

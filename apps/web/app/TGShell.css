@@ -1,14 +1,14 @@
-/* Largeur visuelle + hauteur Dock (constante) */
+/* apps/web/app/TGShell.css */
+
+/* Variables globales */
 :root {
   --tg-mobile-width: 420px;
-  --dock-height: 72px; /* hauteur de la barre de navigation */
+  --dock-height: 72px;     /* taille de la barre (hors encoche) */
+  --header-h: 56px;        /* hauteur "utile" du header (hors encoche) */
 }
 
-/* Fond de page aligné sur Telegram si dispo */
-html,
-body {
-  background: var(--tg-app-bg, var(--mantine-color-body));
-}
+/* Fond aligné sur Telegram si dispo */
+html, body { background: var(--tg-app-bg, var(--mantine-color-body)); }
 
 /* Cadre "mobile" constant (même sur desktop) */
 .tg-shell {
@@ -17,20 +17,40 @@ body {
   min-height: 100dvh;
 }
 
-/* Contenu scrollable, réserve la place du dock en bas */
+/* Colonne scrollable qui réserve la place du dock */
 .tg-viewport {
   width: min(var(--app-max-w, 420px), 100vw);
   min-height: var(--tg-vh, 100dvh);
   margin: 0 auto;
-  box-sizing: border-box;
-
-  /* même variable partout, + encoche bas dynamique */
   padding-bottom: calc(var(--dock-height) + var(--dock-inset, var(--safe-bottom, 0px)));
+  box-sizing: border-box;
   transition: padding-bottom .2s ease;
+
+  /* cacher visuellement la scrollbar (le scroll fonctionne) */
+  -ms-overflow-style: none;      /* IE/Edge */
+  scrollbar-width: none;         /* Firefox */
+}
+.tg-viewport::-webkit-scrollbar { display: none; } /* WebKit */
+
+/* Header sticky : il englobe l’encoche via padding-top = --safe-top */
+.tg-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: var(--tg-app-bg, var(--mantine-color-body));
+  border-bottom: 1px solid color-mix(in oklab, var(--mantine-color-gray-4), transparent 60%);
+  padding: calc(var(--safe-top, 0px)) var(--mantine-spacing-md) 0 var(--mantine-spacing-md);
+  min-height: calc(var(--header-h) + var(--safe-top, 0px));
+  display: grid;
+  align-items: center;
+}
+.tg-headerRow {
+  height: var(--header-h);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
-/* Pas de padding-top ici : le header est dans le flux et
-   gère seulement sa propre encoche via --safe-top */
-@media (max-width: 360px) {
-  :root { --tg-mobile-width: 100vw; }
-}
+/* Petits écrans : largeur pleine */
+@media (max-width: 360px) { :root { --tg-mobile-width: 100vw; } }

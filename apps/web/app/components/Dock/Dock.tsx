@@ -1,3 +1,4 @@
+// apps/web/app/components/Dock/Dock.tsx
 "use client";
 
 import React, { type ReactNode } from "react";
@@ -13,7 +14,7 @@ type TabItem = { key: Tab; label: string; icon: ReactNode; href: string };
 const items: TabItem[] = [
   { key: "promo",   label: "Promos",    icon: <Megaphone />,     href: "/promo" },
   { key: "cart",    label: "Panier",    icon: <ShoppingCart />,  href: "/cart" },
-  { key: "shop",    label: "Shop",      icon: <Store />,         href: "/" },        // ou "/shop"
+  { key: "shop",    label: "Shop",      icon: <Store />,         href: "/" },
   { key: "orders",  label: "Commandes", icon: <Package />,       href: "/orders" },
   { key: "account", label: "Compte",    icon: <User />,          href: "/account" },
 ];
@@ -42,13 +43,13 @@ export default function Dock() {
                 key={it.key}
                 aria-label={it.label}
                 aria-current={isActive ? "page" : undefined}
-                size={52}                  // visuel piloté par la CSS
+                size={52}
                 radius="xl"
                 variant="transparent"
                 className={`${s.item} ${isActive ? s.active : ""}`}
-                component={Link}           // Mantine supporte le polymorphisme
+                component={Link}
                 href={it.href}
-                prefetch={false}           // optionnel
+                prefetch={false}
               >
                 {it.icon}
               </ActionIcon>

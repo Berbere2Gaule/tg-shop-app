@@ -3,29 +3,17 @@
 
 import { useEffect } from "react";
 
-/** lit env(safe-area-inset-bottom) côté iOS */
-function readIOSSafeBottom(): number {
+/** Sonde CSS iOS pour lire env(safe-area-inset-*) en px */
+function readIOSSafeInset(side: "top" | "bottom"): number {
   try {
     const el = document.createElement("div");
-    el.style.cssText =
-      "position:fixed;left:0;bottom:0;height:0;visibility:hidden;padding-bottom:env(safe-area-inset-bottom)";
+    el.style.cssText = `
+      position:fixed;left:0;${side}:0;height:0;visibility:hidden;
+      padding-${side}: env(safe-area-inset-${side})
+    `;
     document.body.appendChild(el);
-    const v = parseFloat(getComputedStyle(el).paddingBottom || "0") || 0;
-    el.remove();
-    return v;
-  } catch {
-    return 0;
-  }
-}
-
-/** lit env(safe-area-inset-top) côté iOS */
-function readIOSSafeTop(): number {
-  try {
-    const el = document.createElement("div");
-    el.style.cssText =
-      "position:fixed;left:0;top:0;height:0;visibility:hidden;padding-top:env(safe-area-inset-top)";
-    document.body.appendChild(el);
-    const v = parseFloat(getComputedStyle(el).paddingTop || "0") || 0;
+    const v =
+      parseFloat(getComputedStyle(el).getPropertyValue(`padding-${side}`)) || 0;
     el.remove();
     return v;
   } catch {
@@ -43,8 +31,11 @@ export function useTelegramInit() {
     const tg = (window as any)?.Telegram?.WebApp;
     const html = document.documentElement;
 
-    const IOS_BASELINE_BOTTOM = 14; // petit confort au-dessus de la home bar
-    let maxObservedInset = 0;
+    // petit confort au-dessus de la home bar quand iOS "oublie" la safe-area
+    const IOS_BOTTOM_BASELINE = 14;
+
+    let maxBottom = 0;
+    let maxTop = 0;
 
     const applyTheme = () => {
       const tp = tg?.themeParams ?? {};
@@ -53,36 +44,38 @@ export function useTelegramInit() {
         (tp as any).secondary_bg_color ||
         "";
       if (bg) html.style.setProperty("--tg-app-bg", bg);
+      if (tg?.colorScheme) html.dataset.tgTheme = tg.colorScheme;
+      if (tg?.platform) html.dataset.tgPlatform = tg.platform;
     };
 
     const applyViewport = () => {
-      const isIOS = tg?.platform === "ios" || isLikelyIOS();
+      const isIOS = (tg?.platform === "ios") || isLikelyIOS();
 
-      // Hauteur visible
-      const vh = tg?.viewportStableHeight || tg?.viewportHeight || window.innerHeight;
+      const vh =
+        tg?.viewportStableHeight ||
+        tg?.viewportHeight ||
+        window.innerHeight;
 
-      // Bottom (home bar)
+      // bas
       const fromVH = Math.max(0, window.innerHeight - vh);
-      const fromEnvBottom = readIOSSafeBottom();
-      let measuredBottom = Math.max(fromVH, fromEnvBottom);
-      if (isIOS) measuredBottom = Math.max(measuredBottom, IOS_BASELINE_BOTTOM);
-      maxObservedInset = Math.max(maxObservedInset, measuredBottom);
+      const fromEnvBottom = readIOSSafeInset("bottom");
+      let bottom = Math.max(fromVH, fromEnvBottom);
+      if (isIOS) bottom = Math.max(bottom, IOS_BOTTOM_BASELINE);
+      maxBottom = Math.max(maxBottom, bottom);
 
-      // Top (encoche / status bar)
-      const topInset = isIOS ? readIOSSafeTop() : 0;
+      // haut
+      const top = readIOSSafeInset("top");
+      maxTop = Math.max(maxTop, top);
 
-      // Expose aux styles
       html.style.setProperty("--tg-vh", `${vh}px`);
-      html.style.setProperty("--dock-inset", `${maxObservedInset}px`);
-      html.style.setProperty("--safe-bottom", `${maxObservedInset}px`); // compat
-      html.style.setProperty("--safe-top", `${topInset}px`);
+      html.style.setProperty("--dock-inset", `${maxBottom}px`);
+      html.style.setProperty("--safe-bottom", `${maxBottom}px`); // compat
+      html.style.setProperty("--safe-top", `${maxTop}px`);
+
       html.classList.add("tg-ready");
     };
 
     try {
-      if (tg?.colorScheme) html.dataset.tgTheme = tg.colorScheme;
-      if (tg?.platform) html.dataset.tgPlatform = tg.platform;
-
       applyTheme();
       tg?.ready?.();
       tg?.expand?.();
@@ -91,20 +84,21 @@ export function useTelegramInit() {
       tg?.onEvent?.("viewportChanged", applyViewport);
       tg?.onEvent?.("themeChanged", applyTheme);
 
+      // hors Telegram (ou si tg absent)
       if (!tg) {
-        // Hors Telegram
-        const baseline = isLikelyIOS() ? IOS_BASELINE_BOTTOM : 0;
-        const topInset = isLikelyIOS() ? readIOSSafeTop() : 0;
+        const baseline = isLikelyIOS() ? IOS_BOTTOM_BASELINE : 0;
         html.style.setProperty("--tg-vh", `${window.innerHeight}px`);
         html.style.setProperty("--dock-inset", `${baseline}px`);
         html.style.setProperty("--safe-bottom", `${baseline}px`);
-        html.style.setProperty("--safe-top", `${topInset}px`);
+        html.style.setProperty("--safe-top", `${readIOSSafeInset("top")}px`);
         html.classList.add("tg-ready");
+        window.addEventListener("resize", applyViewport);
       }
 
       return () => {
         tg?.offEvent?.("viewportChanged", applyViewport);
         tg?.offEvent?.("themeChanged", applyTheme);
+        window.removeEventListener?.("resize", applyViewport);
       };
     } catch {
       /* noop */
