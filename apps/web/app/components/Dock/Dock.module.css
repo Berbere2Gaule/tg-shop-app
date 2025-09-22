@@ -3,7 +3,7 @@
   position: fixed;
   left: 50%;
   transform: translateX(-50%);
-  bottom: 0; /* collé au bord physique du webview */
+  bottom: 0; /* ⬅️ on NE déplace PLUS la barre */
   width: min(var(--app-max-w, 420px), 100vw);
   display: grid;
   place-items: center;
@@ -11,11 +11,9 @@
   pointer-events: none; /* le Paper gère les clics */
 }
 
-/* ---------- Barre plein bas (OPAQUE) ---------- */
+/* ---------- Barre plein bas : fond OPAQUE + hauteur = 64px + safe ---------- */
 .barFill {
-  /* Couleur de surface :
-     - si Telegram fournit themeParams.bottom_bar_bg_color => --tg-surface (via telegram.ts)
-     - sinon fallback Mantine */
+  /* tokens light */
   --surface: var(--tg-surface, var(--mantine-color-white));
   --border: color-mix(in oklab, var(--mantine-color-gray-4), transparent 45%);
   --shadow: 0 -6px 24px rgba(0,0,0,.08);
@@ -25,17 +23,15 @@
   --active-icon: var(--mantine-color-dark-7);
   --bg-gray-alpha: color-mix(in oklab, var(--icon-inactive), transparent 65%);
 
+  position: relative;
   width: 100%;
-  /* ⬇️ le dock GRANDIT pour englober la safe-area */
-  height: calc(64px + var(--safe-bottom, env(safe-area-inset-bottom, 0px)));
-  padding: 8px 16px calc(8px + var(--safe-bottom, env(safe-area-inset-bottom, 0px)));
-
+  height: calc(64px + var(--safe-bottom, 0px)); /* ⬅️ on “grandit” la plaque */
+  padding: 8px 16px calc(8px + var(--safe-bottom, 0px)); /* ⬅️ et l’intérieur */
   border-radius: 0;
   border-width: 1px 0 0 0 !important;  /* bordure en haut uniquement */
   border-color: var(--border) !important;
 
-  /* 🧱 fond 100% OPAQUE (pas de transparence/blur) */
-  background-color: var(--surface) !important;
+  background-color: var(--surface) !important; /* 🔒 OPAQUE */
   background-image: none !important;
   backdrop-filter: none !important;
 
@@ -137,7 +133,5 @@
 
 /* ---------- XS ---------- */
 @media (max-width: 360px) {
-  .barFill {
-    height: calc(60px + var(--safe-bottom, env(safe-area-inset-bottom, 0px)));
-  }
+  .barFill { height: calc(60px + var(--safe-bottom, 0px)); }
 }
