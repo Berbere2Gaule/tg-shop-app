@@ -1,33 +1,53 @@
-/* Le header est un “jumeau” visuel du Dock, mais en haut */
+/* HeaderBar.module.css */
 
+/* Conteneur du header : collé en haut, largeur = vue mobile */
 .root {
   position: fixed;
   left: 50%;
   transform: translateX(-50%);
-  top: var(--header-inset, env(safe-area-inset-top, 0px)); /* ↖️ sous l’encoche iOS */
+  top: 0;                          /* ⬅️ on colle en haut */
   width: min(var(--app-max-w, 420px), 100vw);
   z-index: 70;
-  pointer-events: none; /* Le Paper interne gère les clics */
+  pointer-events: none;            /* le Paper interne gère les clics */
 }
 
-/* Variables globales de surface du header (définies dans TGShell.css) */
+/* Barre (papier) – même visuel que le dock, mais elle PEINT l’encoche */
 .barFill {
-  width: 100%;
-  height: var(--dock-height); /* même hauteur que le dock */
-  padding: 8px 12px;
-  border-radius: 0;
-  border-width: 0 0 1px 0 !important;  /* bordure en bas uniquement */
-  border-color: var(--hdr-border) !important;
+  /* tokens light */
+  --surface: var(--mantine-color-white);
+  --border: color-mix(in oklab, var(--mantine-color-gray-4), transparent 45%);
+  --shadow: 0 6px 24px rgba(0,0,0,.08);
 
-  background-color: var(--hdr-surface) !important;  /* OPAQUE */
+  width: 100%;
+  height: var(--dock-height);                    /* hauteur “utile” identique au dock */
+  padding: 8px 12px;
+  padding-top: calc(                             /* ⬅️ peint l’encoche */
+    var(--header-inset, env(safe-area-inset-top, 0px))
+    + var(--header-extra-gap, 0px)
+  );
+  box-sizing: border-box;
+
+  border-radius: 0;
+  border-width: 0 0 1px 0 !important;           /* bordure en bas */
+  border-color: var(--border) !important;
+
+  background-color: var(--surface) !important;  /* OPAQUE */
   background-image: none !important;
   backdrop-filter: none !important;
 
-  box-shadow: var(--hdr-shadow);
+  box-shadow: var(--shadow);
   pointer-events: auto;
   isolation: isolate;
 }
 
+/* Thème dark */
+[data-mantine-color-scheme="dark"] .barFill {
+  --surface: var(--mantine-color-dark-7);
+  --border: color-mix(in oklab, var(--mantine-color-dark-4), transparent 32%);
+  --shadow: 0 2px 16px rgba(0,0,0,.46);
+}
+
+/* Ligne interne: logo à gauche, actions à droite */
 .row {
   display: grid;
   grid-template-columns: 1fr auto;
@@ -36,21 +56,32 @@
   height: 100%;
 }
 
-/* Logo — on masque par CSS selon le thème Mantine (aucun JS) */
+/* Logo: 2 images, on masque selon le thème => zéro mismatch d’hydratation */
 .logoWrap { display: flex; align-items: center; gap: 8px; }
-.logo { height: 22px; display: block; }
-.logoLight { display: block; }
-.logoDark { display: none; }
+.logo { height: 22px; }
 
 :global([data-mantine-color-scheme="dark"]) .logoLight { display: none; }
-:global([data-mantine-color-scheme="dark"]) .logoDark  { display: block; }
+:global([data-mantine-color-scheme="light"]) .logoDark { display: none; }
 
-/* Actions (même taille que les boutons de la Home) */
+/* Actions (même taille que tes boutons sur la Home) */
 .actions { display: grid; grid-auto-flow: column; gap: 8px; }
 .btn { height: 36px; padding-inline: 14px; }
 
-/* Petit switch carré 36x36 (compact) */
+/* Grossir le BACKGROUND sans toucher à l’icône */
 .switch {
-  width: 36px;
-  height: 36px;
+  --bg: 36px;   /* ← diamètre du fond (24/28/32/36/40...) */
+  --ico: 18px;  /* ← taille de l’icône, fixe */
+
+  width: var(--bg);
+  height: var(--bg);
+  min-width: var(--bg);
+  border-radius: 9999px;
+  display: inline-grid;
+  place-items: center;
+}
+
+/* l’icône reste petite */
+.switch :global(svg) {
+  width: var(--ico);
+  height: var(--ico);
 }

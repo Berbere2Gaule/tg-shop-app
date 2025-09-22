@@ -40,15 +40,14 @@ export default function HeaderBar() {
     <div className={classes.root} role="banner">
       <Paper className={classes.barFill} radius={0} withBorder>
         <div className={classes.row}>
-          {/* Logo: 2 versions, masquées par CSS selon le thème ⇒ pas de mismatch */}
           <div className={classes.logoWrap} aria-label="Shop">
             <img src="/logo-light.svg" className={`${classes.logo} ${classes.logoLight}`} alt="Shop" />
             <img src="/logo-dark.svg"  className={`${classes.logo} ${classes.logoDark}`}  alt="Shop" />
           </div>
 
           <Group className={classes.actions} gap={8}>
-            <Button variant="default" className={classes.btn}>Se connecter</Button>
-            <Button className={classes.btn}>Créer un compte</Button>
+            <Button variant="default" className={classes.btn}>Canal</Button>
+            <Button className={classes.btn}>Groupe Privé</Button>
             <ThemeSwitch />
           </Group>
         </div>
