@@ -3,7 +3,7 @@
   position: fixed;
   left: 50%;
   transform: translateX(-50%);
-  bottom: 0; /* 🔒 on NE BOUGE PAS le dock, on l’agrandit */
+  bottom: 0; /* on NE BOUGE PLUS, on gère l’inset à l’intérieur */
   width: min(var(--app-max-w, 420px), 100vw);
   display: grid;
   place-items: center;
@@ -24,25 +24,21 @@
   --bg-gray-alpha: color-mix(in oklab, var(--icon-inactive), transparent 65%);
 
   width: 100%;
-
-  /* ⬇️ Hauteur = 64 + safe-area (avec fallback env() si JS pas encore prêt) */
-  height: calc(64px + var(--safe-bottom, env(safe-area-inset-bottom, 0px)));
-  padding: 8px 16px
-           calc(8px + var(--safe-bottom, env(safe-area-inset-bottom, 0px)));
-
+  /* ⬇️ on “gonfle” hauteur et padding avec --dock-inset (safe-area dynamique) */
+  height: calc(64px + var(--dock-inset, 0px));
+  padding: 8px 16px calc(8px + var(--dock-inset, 0px));
   border-radius: 0;
   border-width: 1px 0 0 0 !important;  /* bordure en haut uniquement */
   border-color: var(--border) !important;
 
-  /* 🧱 fond 100% OPAQUE (pas de transparence/blur) */
-  background-color: var(--tg-surface, var(--surface)) !important;
+  /* 🧱 fond OPAQUE, pas de transparence */
+  background-color: var(--surface) !important;
   background-image: none !important;
   backdrop-filter: none !important;
 
   box-shadow: var(--shadow);
   pointer-events: auto;
-  isolation: isolate; /* nouveau contexte, évite les interférences */
-  transform: translateZ(0); /* hint GPU, limite certains glitches iOS */
+  isolation: isolate;
 }
 
 /* --------- Thème dark : fond OPAQUE --------- */
@@ -67,7 +63,7 @@
 }
 
 /* =========================================================
-   Boutons (statiques) + RING interne (centre TRANSPARENT)
+   Boutons + RING interne (centre TRANSPARENT)
    ========================================================= */
 .item {
   --ring-a: var(--mantine-primary-color-6, #228be6);
@@ -89,7 +85,6 @@
   transition: color .15s ease, background-color .15s ease;
 }
 
-/* Icône dimensionnée par CSS */
 .item :where(svg) {
   display: block;
   width: 22px;
@@ -100,27 +95,23 @@
   z-index: 3;
 }
 
-/* Hover : fond gris, icône grise */
 .item:hover {
   background: var(--bg-gray-alpha);
   color: var(--icon-inactive) !important;
 }
 .item:active { transform: none !important; }
 
-/* Actif : fond gris + icône lisible */
 .item.active {
   background: var(--bg-gray-alpha);
   color: var(--active-icon) !important;
 }
 
-/* RING interne (centre 100% TRANSPARENT) */
 .item.active::before {
   content: "";
   position: absolute;
   inset: var(--ring-outer-gap);
   border-radius: 999px;
   pointer-events: none;
-
   background: conic-gradient(from 0deg, var(--ring-a), var(--ring-b), var(--ring-a));
   -webkit-mask: radial-gradient(
     farthest-side,
@@ -138,8 +129,5 @@
 
 /* ---------- XS ---------- */
 @media (max-width: 360px) {
-  .barFill {
-    height: calc(60px + var(--safe-bottom, env(safe-area-inset-bottom, 0px)));
-    padding-bottom: calc(8px + var(--safe-bottom, env(safe-area-inset-bottom, 0px)));
-  }
+  .barFill { height: calc(60px + var(--dock-inset, 0px)); }
 }

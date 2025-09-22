@@ -41,12 +41,12 @@ html, body {
   min-height: 100dvh;
 }
 
-/* Réserve exactement la place du dock (64) + safe-area dynamique */
+/* Réserve exactement la place du dock : 64 + inset dynamique */
 .tg-viewport {
   width: min(var(--app-max-w, 420px), 100vw);
   min-height: var(--tg-vh, 100dvh);
   margin: 0 auto;
-  padding-bottom: calc(64px + var(--safe-bottom, 0px));
+  padding-bottom: calc(64px + var(--dock-inset, var(--safe-bottom, 0px)));
   box-sizing: border-box;
   transition: padding-bottom .2s ease;
 }
