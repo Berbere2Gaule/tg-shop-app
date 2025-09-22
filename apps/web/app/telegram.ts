@@ -23,7 +23,7 @@ export function useTelegramInit() {
     const tg = (window as any)?.Telegram?.WebApp;
     const html = document.documentElement;
 
-    const HOME_BAR_GAP = 10; // petit confort au-dessus de la home-bar iOS
+    const HOME_BAR_GAP = 20; // petit confort au-dessus de la home-bar iOS
 
     const applyViewport = () => {
       // 1) Hauteur “stable” fournie par Telegram si dispo
