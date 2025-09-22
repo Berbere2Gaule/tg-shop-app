@@ -51,6 +51,8 @@
   width: min(var(--app-max-w, 420px), 100vw);
   min-height: var(--tg-vh, 100dvh);
   margin: 0 auto;
+  /* fallback via env() avant JS, puis var(--safe-bottom) quand Telegram est prêt */
   padding-bottom: calc(64px + var(--safe-bottom, env(safe-area-inset-bottom, 0px)));
   box-sizing: border-box;
+  transition: padding-bottom .2s ease; /* lissage quand la vraie hauteur arrive */
 }
