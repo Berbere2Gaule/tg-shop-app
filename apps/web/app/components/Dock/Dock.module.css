@@ -1,9 +1,9 @@
-/* ---------- Overlay bas : largeur = vue mobile ---------- */
+/* ---------- Overlay bas : largeur = vue mobile, décalé au-dessus de l’encoche ---------- */
 .root {
   position: fixed;
-  bottom: 0;
   left: 50%;
   transform: translateX(-50%);
+  bottom: var(--safe-bottom, env(safe-area-inset-bottom, 0px)); /* ⬅️ on décale, on n’augmente PAS la hauteur */
   width: min(var(--app-max-w, 420px), 100vw);
   display: grid;
   place-items: center;
@@ -24,25 +24,25 @@
   --bg-gray-alpha: color-mix(in oklab, var(--icon-inactive), transparent 65%);
 
   width: 100%;
-  height: calc(64px + var(--safe-bottom, env(safe-area-inset-bottom, 0px)));
-  padding: 8px 16px calc(8px + var(--safe-bottom, env(safe-area-inset-bottom, 0px)));
+  height: 64px;                             /* ⬅️ hauteur fixe */
+  padding: 8px 16px;                        /* ⬅️ pas de padding-bottom “safe” ici */
   border-radius: 0;
-  border-width: 1px 0 0 0 !important;     /* bordure en haut uniquement */
+  border-width: 1px 0 0 0 !important;       /* bordure en haut uniquement */
   border-color: var(--border) !important;
 
-  /* 🧱 fond 100% OPAQUE (aucune transparence/blur possible) */
+  /* 🧱 fond 100% OPAQUE (pas de transparence/blur) */
   background-color: var(--surface) !important;
   background-image: none !important;
   backdrop-filter: none !important;
 
   box-shadow: var(--shadow);
   pointer-events: auto;
-  isolation: isolate; /* évite toute influence de filtres parents */
+  isolation: isolate;
 }
 
 /* --------- Thème dark : fond OPAQUE --------- */
 [data-mantine-color-scheme="dark"] .barFill {
-  --surface: var(--mantine-color-dark-7); /* 🔒 plus de color-mix avec transparent */
+  --surface: var(--mantine-color-dark-7);
   --border: color-mix(in oklab, var(--mantine-color-dark-4), transparent 32%);
   --shadow: 0 -2px 16px rgba(0,0,0,.46);
 
@@ -117,7 +117,6 @@
   pointer-events: none;
 
   background: conic-gradient(from 0deg, var(--ring-a), var(--ring-b), var(--ring-a));
-
   -webkit-mask: radial-gradient(
     farthest-side,
     transparent calc(100% - var(--ring-thickness) - var(--ring-soften)),
@@ -128,14 +127,11 @@
     transparent calc(100% - var(--ring-thickness) - var(--ring-soften)),
     #000       calc(100% - var(--ring-thickness))
   );
-
   filter: drop-shadow(0 0 2px color-mix(in oklab, var(--ring-a), transparent 60%));
   z-index: 2;
 }
 
 /* ---------- XS ---------- */
 @media (max-width: 360px) {
-  .barFill {
-    height: calc(60px + var(--safe-bottom, env(safe-area-inset-bottom, 0px)));
-  }
+  .barFill { height: 60px; }
 }
