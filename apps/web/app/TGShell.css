@@ -6,12 +6,17 @@
   --dock-height: 64px;
 }
 
+/* Harmonise le fond général avec Telegram si dispo */
+html, body {
+  background: var(--tg-app-bg, var(--mantine-color-body));
+}
+
 /* Centre la “vue mobile” sur desktop */
 .shell {
   min-height: 100dvh;
   display: grid;
   place-items: center;
-  background: var(--mantine-color-body);
+  background: var(--tg-app-bg, var(--mantine-color-body));
 }
 
 /* Vue téléphone */
@@ -24,7 +29,7 @@
   overflow: clip;
 }
 
-/* Si Telegram expose une hauteur stable, on l’utilise */
+/* Hauteur stable Telegram si dispo */
 @supports (height: var(--tg-viewport-stable-height)) {
   .viewport { min-height: var(--tg-viewport-stable-height); }
 }
@@ -36,8 +41,7 @@
   min-height: 100dvh;
 }
 
-/* Zone scrollable qui réserve exactement la place du dock
-   = hauteur du dock (64) + safe-area dynamique */
+/* Réserve exactement la place du dock (64) + safe-area dynamique */
 .tg-viewport {
   width: min(var(--app-max-w, 420px), 100vw);
   min-height: var(--tg-vh, 100dvh);

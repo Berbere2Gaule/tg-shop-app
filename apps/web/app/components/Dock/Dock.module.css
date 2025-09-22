@@ -3,18 +3,18 @@
   position: fixed;
   left: 50%;
   transform: translateX(-50%);
-  bottom: 0;                               /* ⬅️ colle au bord bas */
+  bottom: 0;  /* colle au bord; la safe-area est absorbée DEDANS */
   width: min(var(--app-max-w, 420px), 100vw);
   display: grid;
   place-items: center;
   z-index: 60;
-  pointer-events: none;                     /* le Paper gère les clics */
+  pointer-events: none; /* le Paper gère les clics */
 }
 
 /* ---------- Barre plein bas (OPAQUE) ---------- */
 .barFill {
   /* tokens light */
-  --surface: var(--mantine-color-white);
+  --surface: var(--tg-surface, var(--mantine-color-white));
   --border: color-mix(in oklab, var(--mantine-color-gray-4), transparent 45%);
   --shadow: 0 -6px 24px rgba(0,0,0,.08);
 
@@ -24,15 +24,13 @@
   --bg-gray-alpha: color-mix(in oklab, var(--icon-inactive), transparent 65%);
 
   width: 100%;
-  /* ⬇️ on ABSORBE la safe-area DEDANS : visuellement, le dock recouvre jusqu'en bas */
-  height: calc(64px + var(--safe-bottom, 0px));
-  padding: 8px 16px calc(8px + var(--safe-bottom, 0px));
+  height: calc(64px + var(--safe-bottom, 0px));             /* ⬅️ absorption */
+  padding: 8px 16px calc(8px + var(--safe-bottom, 0px));    /* ⬅️ absorption */
   border-radius: 0;
   border-width: 1px 0 0 0 !important;      /* bordure en haut uniquement */
   border-color: var(--border) !important;
 
-  /* 🧱 fond totalement OPAQUE */
-  background-color: var(--surface) !important;
+  background-color: var(--surface) !important; /* 🧱 OPAQUE */
   background-image: none !important;
   backdrop-filter: none !important;
 
@@ -43,7 +41,7 @@
 
 /* --------- Thème dark : fond OPAQUE --------- */
 [data-mantine-color-scheme="dark"] .barFill {
-  --surface: var(--mantine-color-dark-7);
+  --surface: var(--tg-surface, var(--mantine-color-dark-7));
   --border: color-mix(in oklab, var(--mantine-color-dark-4), transparent 32%);
   --shadow: 0 -2px 16px rgba(0,0,0,.46);
 

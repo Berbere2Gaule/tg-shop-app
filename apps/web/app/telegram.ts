@@ -23,21 +23,28 @@ export function useTelegramInit() {
     const tg = (window as any)?.Telegram?.WebApp;
     const html = document.documentElement;
 
+    const isIOS =
+      /iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+      tg?.platform === "ios";
+
+    const DEFAULT_IOS_HOME_BAR = 34; // fallback standard (portrait)
+    const MIN_BELIEVABLE = 10;       // en-dessous => suspect
+
     const applyViewport = () => {
-      // 1) Hauteur stable Telegram si dispo
       const vh =
         tg?.viewportStableHeight ||
         tg?.viewportHeight ||
         window.innerHeight;
 
-      // 2) Safe area estimée par delta
-      const fromVH = Math.max(0, window.innerHeight - vh);
+      const fromVH = Math.max(0, window.innerHeight - vh); // TG delta
+      const fromEnv = readIOSSafeBottom();                  // iOS env()
 
-      // 3) Safe area mesurée via env()
-      const fromEnv = readIOSSafeBottom();
+      let safeBottom = Math.max(fromVH, fromEnv);
 
-      // 4) Valeur retenue
-      const safeBottom = Math.max(fromVH, fromEnv);
+      // 🔒 Fallback robuste pour Telegram iOS quand tout remonte 0
+      if (isIOS && safeBottom < MIN_BELIEVABLE) {
+        safeBottom = DEFAULT_IOS_HOME_BAR;
+      }
 
       html.style.setProperty("--tg-vh", `${vh}px`);
       html.style.setProperty("--safe-bottom", `${safeBottom}px`);
@@ -45,12 +52,32 @@ export function useTelegramInit() {
     };
 
     try {
+      // Thème Telegram -> CSS vars + hint au conteneur
+      const p = tg?.themeParams || {};
+      const bg = (p as any).bg_color as string | undefined;
+      const secondary = (p as any).secondary_bg_color as string | undefined;
+      const bottom = (p as any).bottom_bar_bg_color as string | undefined;
+
+      const appBg = bg || secondary;
+      const surface = bottom || secondary || bg;
+
+      if (appBg) {
+        html.style.setProperty("--tg-app-bg", appBg);
+        tg?.setBackgroundColor?.(appBg);
+        tg?.setHeaderColor?.("bg_color"); // ou "secondary_bg_color"
+      }
+      if (surface) {
+        html.style.setProperty("--tg-surface", surface); // utilisé par le Dock
+      }
+
       if (tg?.colorScheme) html.dataset.tgTheme = tg.colorScheme;
+
       tg?.ready?.();
       tg?.expand?.();
 
       applyViewport();
       tg?.onEvent?.("viewportChanged", applyViewport);
+      window.addEventListener("resize", applyViewport, { passive: true });
 
       if (!tg) {
         // Hors Telegram : valeurs neutres
@@ -59,7 +86,10 @@ export function useTelegramInit() {
         html.classList.add("tg-ready");
       }
 
-      return () => tg?.offEvent?.("viewportChanged", applyViewport);
+      return () => {
+        tg?.offEvent?.("viewportChanged", applyViewport);
+        window.removeEventListener("resize", applyViewport);
+      };
     } catch {
       /* noop */
     }
