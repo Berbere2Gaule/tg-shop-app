@@ -66,7 +66,7 @@ export function useTelegramInit() {
       readCssVarPx("--dock-inset") || readCssVarPx("--safe-bottom") || 0;
     let maxTopInset = readCssVarPx("--header-inset") || 0;
 
-    const computeAndApply = () => {
+    const applyInsets = () => {
       const isIOS = (tg?.platform === "ios") || isLikelyIOS();
 
       // hauteur visible Telegram quand dispo
@@ -111,9 +111,9 @@ export function useTelegramInit() {
 
     // pour capturer l’offset final après “expand”
     const computeStabilized = () => {
-      computeAndApply();
+      applyInsets();
       // 2× rAF = après layout + paint → évite le rebond
-      requestAnimationFrame(() => requestAnimationFrame(computeAndApply));
+      requestAnimationFrame(() => requestAnimationFrame(applyInsets));
     };
 
     try {
@@ -126,7 +126,7 @@ export function useTelegramInit() {
       tg?.onEvent?.("themeChanged", applyTheme);
 
       // iOS bouge offsetTop sur visualViewport → même handler partagé
-      const onVV = () => computeAndApply();
+      const onVV = () => applyInsets();
       const vv = window.visualViewport;
       vv?.addEventListener("resize", onVV, { passive: true });
       vv?.addEventListener("scroll", onVV, { passive: true });
