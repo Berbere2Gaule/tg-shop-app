@@ -29,7 +29,7 @@
   width: 100%;
   /* Hauteur = dock + encoche dynamique */
   height: calc(var(--dock-height, 64px) + var(--dock-inset, var(--safe-bottom, 0px)));
-  padding: 8px 20px calc(8px + var(--dock-inset, var(--safe-bottom, 0px)));
+  padding: 8px 20px 8px;
   border-radius: 0;
   border-width: 1px 0 0 0 !important;
   border-color: var(--border) !important;
