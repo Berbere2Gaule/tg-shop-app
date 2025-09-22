@@ -3,7 +3,7 @@
   position: fixed;
   left: 50%;
   transform: translateX(-50%);
-  bottom: 0; /* ⬅️ on NE déplace PLUS la barre */
+  bottom: 0; /* 🔒 on NE BOUGE PAS le dock, on l’agrandit */
   width: min(var(--app-max-w, 420px), 100vw);
   display: grid;
   place-items: center;
@@ -11,10 +11,10 @@
   pointer-events: none; /* le Paper gère les clics */
 }
 
-/* ---------- Barre plein bas : fond OPAQUE + hauteur = 64px + safe ---------- */
+/* ---------- Barre plein bas (OPAQUE) ---------- */
 .barFill {
   /* tokens light */
-  --surface: var(--tg-surface, var(--mantine-color-white));
+  --surface: var(--mantine-color-white);
   --border: color-mix(in oklab, var(--mantine-color-gray-4), transparent 45%);
   --shadow: 0 -6px 24px rgba(0,0,0,.08);
 
@@ -23,26 +23,31 @@
   --active-icon: var(--mantine-color-dark-7);
   --bg-gray-alpha: color-mix(in oklab, var(--icon-inactive), transparent 65%);
 
-  position: relative;
   width: 100%;
-  height: calc(64px + var(--safe-bottom, 0px)); /* ⬅️ on “grandit” la plaque */
-  padding: 8px 16px calc(8px + var(--safe-bottom, 0px)); /* ⬅️ et l’intérieur */
+
+  /* ⬇️ Hauteur = 64 + safe-area (avec fallback env() si JS pas encore prêt) */
+  height: calc(64px + var(--safe-bottom, env(safe-area-inset-bottom, 0px)));
+  padding: 8px 16px
+           calc(8px + var(--safe-bottom, env(safe-area-inset-bottom, 0px)));
+
   border-radius: 0;
   border-width: 1px 0 0 0 !important;  /* bordure en haut uniquement */
   border-color: var(--border) !important;
 
-  background-color: var(--surface) !important; /* 🔒 OPAQUE */
+  /* 🧱 fond 100% OPAQUE (pas de transparence/blur) */
+  background-color: var(--tg-surface, var(--surface)) !important;
   background-image: none !important;
   backdrop-filter: none !important;
 
   box-shadow: var(--shadow);
   pointer-events: auto;
-  isolation: isolate;
+  isolation: isolate; /* nouveau contexte, évite les interférences */
+  transform: translateZ(0); /* hint GPU, limite certains glitches iOS */
 }
 
 /* --------- Thème dark : fond OPAQUE --------- */
 [data-mantine-color-scheme="dark"] .barFill {
-  --surface: var(--tg-surface, var(--mantine-color-dark-7));
+  --surface: var(--mantine-color-dark-7);
   --border: color-mix(in oklab, var(--mantine-color-dark-4), transparent 32%);
   --shadow: 0 -2px 16px rgba(0,0,0,.46);
 
@@ -133,5 +138,8 @@
 
 /* ---------- XS ---------- */
 @media (max-width: 360px) {
-  .barFill { height: calc(60px + var(--safe-bottom, 0px)); }
+  .barFill {
+    height: calc(60px + var(--safe-bottom, env(safe-area-inset-bottom, 0px)));
+    padding-bottom: calc(8px + var(--safe-bottom, env(safe-area-inset-bottom, 0px)));
+  }
 }

@@ -1,8 +1,9 @@
+// apps/web/app/telegram.ts
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
-/** Fallback CSS : lit env(safe-area-inset-bottom) via une sonde DOM */
+/** Sonde CSS: lit réellement env(safe-area-inset-bottom) sous iOS. */
 function readIOSSafeBottom(): number {
   try {
     const el = document.createElement("div");
@@ -17,79 +18,65 @@ function readIOSSafeBottom(): number {
   }
 }
 
-function isIOSUA() {
-  return /iPad|iPhone|iPod/i.test(navigator.userAgent);
-}
-const TG_IOS_FALLBACK = 20; // hauteur “pilule” raisonnable si tout renvoie 0
-
-/** Ajoute # si Telegram fournit une couleur hex sans # */
-function tgHex(c?: string) {
-  if (!c) return undefined;
-  return c.startsWith("#") ? c : `#${c}`;
-}
-
 export function useTelegramInit() {
+  const lastSafeRef = useRef(0); // empêche la valeur de redescendre (anti-rebond)
+
   useEffect(() => {
     const tg = (window as any)?.Telegram?.WebApp;
     const html = document.documentElement;
 
-    const measure = () => {
-      // 1) visualViewport (fiable iOS) : zone réellement masquée en bas
-      const vv = window.visualViewport;
-      let fromVV = 0;
-      if (vv) {
-        fromVV = Math.max(0, Math.round(window.innerHeight - (vv.height + vv.offsetTop)));
-      }
+    const apply = () => {
+      const inner = window.innerHeight;
+      const vh = tg?.viewportStableHeight ?? tg?.viewportHeight ?? inner;
 
-      // 2) delta innerHeight vs viewport(Stable)Height
-      const vh = tg?.viewportStableHeight || tg?.viewportHeight || 0;
-      const fromVH = vh ? Math.max(0, window.innerHeight - vh) : 0;
+      // 1) delta innerHeight → hauteur viewport Telegram
+      let sb = Math.max(0, inner - vh);
 
-      // 3) env() CSS
-      const fromEnv = readIOSSafeBottom();
+      // 2) fallback iOS réel via env()
+      if (sb < 1) sb = readIOSSafeBottom();
 
-      // 4) max + fallback iOS si tout vaut 0
-      let safeBottom = Math.max(fromVV, fromVH, fromEnv);
-      const platformIsIOS = (tg?.platform === "ios") || isIOSUA();
-      if (platformIsIOS && safeBottom === 0) {
-        safeBottom = TG_IOS_FALLBACK;
-      }
+      // 3) clamp upward-only (évite le “rebond” quand Telegram renvoie 0 ensuite)
+      sb = Math.max(lastSafeRef.current, sb);
+      lastSafeRef.current = sb;
 
-      const usedVH = vh || window.innerHeight;
+      html.style.setProperty("--tg-vh", `${vh}px`);
+      html.style.setProperty("--safe-bottom", `${sb}px`);
 
-      html.style.setProperty("--safe-bottom", `${safeBottom}px`);
-      html.style.setProperty("--tg-vh", `${usedVH}px`);
-      html.classList.add("tg-ready");
+      // Couleurs Telegram pour fond d’app et surface (optionnel mais propre)
+      const p = tg?.themeParams ?? {};
+      const appBg =
+        (typeof p.bg_color === "string" && p.bg_color) ||
+        (typeof p.secondary_bg_color === "string" && p.secondary_bg_color);
+      if (appBg) html.style.setProperty("--tg-app-bg", appBg);
+
+      const surface =
+        (typeof p.bottom_bar_bg_color === "string" && p.bottom_bar_bg_color) ||
+        (typeof p.secondary_bg_color === "string" && p.secondary_bg_color);
+      if (surface) html.style.setProperty("--tg-surface", surface);
+
+      if (tg?.colorScheme) html.dataset.tgTheme = tg.colorScheme;
     };
 
     try {
-      // Couleur de surface pour matcher le fond Telegram derrière la pilule
-      const p = tg?.themeParams;
-      const surface =
-        tgHex(p?.bottom_bar_bg_color) ||
-        tgHex(p?.secondary_bg_color) ||
-        tgHex(p?.bg_color);
-      if (surface) html.style.setProperty("--tg-surface", surface);
-
       tg?.ready?.();
       tg?.expand?.();
 
-      measure();
-      tg?.onEvent?.("viewportChanged", measure);
-      window.visualViewport?.addEventListener("resize", measure);
-      window.visualViewport?.addEventListener("scroll", measure);
+      apply();
+
+      const handler = () => apply();
+      tg?.onEvent?.("viewportChanged", handler);
+      window.addEventListener("resize", handler);
 
       if (!tg) {
-        // Hors Telegram : pas de safe-area
-        html.style.setProperty("--safe-bottom", `0px`);
+        // Hors Telegram: valeurs neutres.
+        lastSafeRef.current = 0;
         html.style.setProperty("--tg-vh", `${window.innerHeight}px`);
-        html.classList.add("tg-ready");
+        html.style.setProperty("--safe-bottom", `0px`);
       }
 
       return () => {
-        tg?.offEvent?.("viewportChanged", measure);
-        window.visualViewport?.removeEventListener("resize", measure);
-        window.visualViewport?.removeEventListener("scroll", measure);
+        tg?.offEvent?.("viewportChanged", handler);
+        window.removeEventListener("resize", handler);
       };
     } catch {
       /* noop */
