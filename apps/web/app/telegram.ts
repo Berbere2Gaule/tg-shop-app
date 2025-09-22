@@ -27,7 +27,7 @@ export function useTelegramInit() {
       /iPhone|iPad|iPod/i.test(navigator.userAgent) ||
       tg?.platform === "ios";
 
-    const DEFAULT_IOS_HOME_BAR = 34; // fallback standard (portrait)
+    const DEFAULT_IOS_HOME_BAR = 44; // fallback standard (portrait)
     const MIN_BELIEVABLE = 10;       // en-dessous => suspect
 
     const applyViewport = () => {
