@@ -54,8 +54,8 @@ export function useTelegramInit() {
     const html = document.documentElement;
 
     // petits “conforts” pour iOS
-    const IOS_BOTTOM_BASELINE = 14;
-    const IOS_TOP_BASELINE = 20;
+    const IOS_BOTTOM_BASELINE = 8;
+    const IOS_TOP_BASELINE = 50;
 
     // ⬇️ valeurs monotones, seedées depuis les var CSS existantes
     let maxBottomInset =
