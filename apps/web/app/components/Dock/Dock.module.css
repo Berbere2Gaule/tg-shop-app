@@ -5,7 +5,7 @@
   position: fixed;
   left: 50%;
   transform: translateX(-50%);
-  bottom: 0; /* la place de l'encoche est absorbée par la hauteur */
+  bottom: 0;
   width: min(var(--app-max-w, 420px), 100vw);
   display: grid;
   place-items: center;
@@ -27,9 +27,13 @@
   --bg-gray-alpha: color-mix(in oklab, var(--icon-inactive), transparent 65%);
 
   width: 100%;
-  /* Hauteur = dock + encoche dynamique */
+
+  /* Hauteur = dock + encoche dynamique (le contenu ne rajoute PAS l’encoche) */
   height: calc(var(--dock-height, 64px) + var(--dock-inset, var(--safe-bottom, 0px)));
+
+  /* IMPORTANT: on ne remet plus l’encoche dans le padding-bottom */
   padding: 8px 20px 8px;
+
   border-radius: 0;
   border-width: 1px 0 0 0 !important;
   border-color: var(--border) !important;
@@ -64,9 +68,7 @@
   gap: 16px;
 }
 
-/* =========================================================
-   Boutons + RING interne (centre TRANSPARENT)
-   ========================================================= */
+/* Boutons */
 .item {
   --ring-a: var(--mantine-primary-color-6, #228be6);
   --ring-b: var(--mantine-primary-color-4, #4dabf7);
@@ -88,7 +90,6 @@
   background: transparent;
   transition: color .15s ease, background-color .15s ease;
 }
-
 .item :where(svg) {
   display: block;
   width: 22px;
@@ -98,19 +99,15 @@
   position: relative;
   z-index: 3;
 }
-
 .item:hover { background: var(--bg-gray-alpha); color: var(--icon-inactive) !important; }
 .item:active { transform: none !important; }
-
 .item.active { background: var(--bg-gray-alpha); color: var(--active-icon) !important; }
-
 .item.active::before {
   content: "";
   position: absolute;
   inset: var(--ring-outer-gap);
   border-radius: 999px;
   pointer-events: none;
-
   background: conic-gradient(from 0deg, var(--ring-a), var(--ring-b), var(--ring-a));
   -webkit-mask: radial-gradient(
     farthest-side,

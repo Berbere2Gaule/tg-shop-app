@@ -1,14 +1,16 @@
-/* TGShell.css */
+/* apps/web/app/TGShell.css */
 
 /* Largeur + hauteurs constantes */
 :root {
   --tg-mobile-width: 420px;
-  --dock-height: 72px;
-  --header-extra-gap: 6px; /* ⬅️ petit rab pour “abaisser un peu plus” le header */
+  --dock-height: 72px;          /* ← taille de base de la “paper” du dock */
+  --header-extra-gap: 6px;       /* sera forcé à 10px par telegram.ts sur iOS */
 }
 
 /* Fond global (aligné avec Telegram si fourni) */
 html, body {
+  height: 100%;
+  overflow: hidden;              /* ← force le scroll sur .tg-viewport (fixe la “scrollbar dark”) */
   background: var(--tg-app-bg, var(--mantine-color-body));
 }
 
@@ -25,14 +27,11 @@ html, body {
   min-height: var(--tg-vh, 100dvh);
   margin: 0 auto;
 
-  /* ⬇️ header: même total visuel que la barre (padding-top applique l’inset) */
   padding-top: calc(
     var(--dock-height)
     + var(--header-inset, env(safe-area-inset-top, 0px))
     + var(--header-extra-gap, 0px)
   );
-
-  /* ⬇️ dock: déjà stabilisé côté iOS */
   padding-bottom: calc(
     var(--dock-height)
     + var(--dock-inset, var(--safe-bottom, 0px))
@@ -41,10 +40,19 @@ html, body {
   box-sizing: border-box;
   transition: padding-top .2s ease, padding-bottom .2s ease;
 
-  /* Masque la scrollbar sur desktop Telegram */
+  /* Scroll uniquement ici */
+  overflow: auto;
+
+  /* Masque la scrollbar (Firefox, Chromium, WebKit) */
+  -ms-overflow-style: none;
   scrollbar-width: none;
 }
 .tg-viewport::-webkit-scrollbar { width: 0; height: 0; }
+
+/* Télégram Desktop : réduire la “paper” du dock pour supprimer l’espace de scrollbar */
+html[data-tg-platform="tdesktop"] :root {
+  --dock-height: 60px; /* essaie 56px si tu veux encore moins de hauteur */
+}
 
 /* Petits écrans: largeur pleine */
 @media (max-width: 360px) {
