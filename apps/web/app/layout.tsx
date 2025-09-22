@@ -1,6 +1,5 @@
 import "@repo/ui/global.css";
 import { Theme } from "@repo/ui/theme";
-
 import {
   ColorSchemeScript,
   MantineProvider,
@@ -9,7 +8,6 @@ import {
 
 import type { PropsWithChildren } from "react";
 import TGShell from "./TGShell";
-import "./TGShell.css";
 
 // Vercel analytics & speed insights (App Router)
 import { Analytics } from "@vercel/analytics/react";
@@ -26,7 +24,6 @@ export default function RootLayout({ children }: PropsWithChildren) {
       <head>
         <ColorSchemeScript />
         <link rel="shortcut icon" href="/favicon.svg" />
-        {/* viewport-fit=cover pour gérer l’encoche iOS */}
         <meta
           name="viewport"
           content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no"
@@ -35,11 +32,8 @@ export default function RootLayout({ children }: PropsWithChildren) {
 
       <body>
         <MantineProvider theme={Theme}>
-          {/* Toute l’app (webview Telegram + Dock) */}
           <TGShell>{children}</TGShell>
         </MantineProvider>
-
-        {/* Place-les dans le body (une seule fois) */}
         <SpeedInsights />
         <Analytics />
       </body>

@@ -1,42 +1,36 @@
-/* Largeur visuelle + hauteurs constantes (Dock & Header) */
+/* Largeur visuelle + hauteur Dock (constante) */
 :root {
   --tg-mobile-width: 420px;
-
-  /* 🔧 règle ici les tailles de tes barres */
-  --header-height: 56px; /* hauteur de TON futur header */
-  --dock-height: 72px;   /* hauteur de TON dock (barre + boutons) */
+  --dock-height: 72px; /* hauteur de la barre de navigation */
 }
 
-/* Fond général aligné sur Telegram si dispo */
+/* Fond de page aligné sur Telegram si dispo */
 html,
 body {
   background: var(--tg-app-bg, var(--mantine-color-body));
 }
 
-/* Cadre "mobile" constant */
+/* Cadre "mobile" constant (même sur desktop) */
 .tg-shell {
   display: grid;
   place-items: center;
   min-height: 100dvh;
 }
 
-/* Scaffold qui respecte les insets haut/bas + hauteurs fixes */
+/* Contenu scrollable, réserve la place du dock en bas */
 .tg-viewport {
   width: min(var(--app-max-w, 420px), 100vw);
   min-height: var(--tg-vh, 100dvh);
   margin: 0 auto;
-
-  /* En haut: espace = header fixe + inset iOS */
-  padding-top: calc(var(--header-height) + var(--header-inset, var(--safe-top, 0px)));
-
-  /* En bas: espace = dock fixe + inset iOS (anti-rebond géré côté JS) */
-  padding-bottom: calc(var(--dock-height) + var(--dock-inset, var(--safe-bottom, 0px)));
-
   box-sizing: border-box;
-  transition: padding-top .2s ease, padding-bottom .2s ease;
+
+  /* même variable partout, + encoche bas dynamique */
+  padding-bottom: calc(var(--dock-height) + var(--dock-inset, var(--safe-bottom, 0px)));
+  transition: padding-bottom .2s ease;
 }
 
-/* Petits écrans : largeur pleine */
+/* Pas de padding-top ici : le header est dans le flux et
+   gère seulement sa propre encoche via --safe-top */
 @media (max-width: 360px) {
   :root { --tg-mobile-width: 100vw; }
 }

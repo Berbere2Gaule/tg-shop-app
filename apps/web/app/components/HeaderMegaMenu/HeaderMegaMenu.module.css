@@ -1,0 +1,91 @@
+:root {
+  /* hauteur “utile” du header (hors encoche) */
+  --header-height: 56px;
+}
+
+/* Sticky + fond aligné sur Telegram ; encoche top via --safe-top */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 45;
+  background: var(--tg-app-bg, var(--mantine-color-body));
+  border-bottom: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+
+  height: calc(var(--header-height) + var(--safe-top, 0px));
+  padding-top: var(--safe-top, 0px);
+}
+
+/* Contenu centré à la largeur mobile */
+.inner {
+  height: var(--header-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  max-width: min(var(--app-max-w, 420px), 100vw);
+  margin: 0 auto;
+  padding-left: var(--mantine-spacing-md);
+  padding-right: var(--mantine-spacing-md);
+}
+
+/* Logo: 2 versions, switch CSS selon le thème -> aucune hydration issue */
+.logo {
+  display: inline-flex;
+  line-height: 0;
+}
+.logoLight { display: inline-block; }
+.logoDark  { display: none; }
+[data-mantine-color-scheme="dark"] .logoLight { display: none; }
+[data-mantine-color-scheme="dark"] .logoDark  { display: inline-block; }
+
+.brand { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; }
+.brandName { font-weight: 600; font-size: 14px; color: light-dark(var(--mantine-color-black), var(--mantine-color-white)); }
+
+/* Liens nav / drawer */
+.link {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding-left: var(--mantine-spacing-md);
+  padding-right: var(--mantine-spacing-md);
+  text-decoration: none;
+  color: light-dark(var(--mantine-color-black), var(--mantine-color-white));
+  font-weight: 500;
+  font-size: var(--mantine-font-size-sm);
+}
+.link:hover {
+  background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6));
+}
+
+/* Dropdown taille app */
+.dropdown {
+  width: min(
+    calc(var(--app-max-w, 420px) - 2 * var(--mantine-spacing-md)),
+    100vw - 32px
+  );
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.subLink {
+  width: 100%;
+  padding: var(--mantine-spacing-xs) var(--mantine-spacing-md);
+  border-radius: var(--mantine-radius-md);
+}
+.subLink:hover {
+  background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-7));
+}
+
+.dropdownFooter {
+  background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-7));
+  margin: calc(var(--mantine-spacing-md) * -1);
+  margin-top: var(--mantine-spacing-sm);
+  padding: var(--mantine-spacing-md) calc(var(--mantine-spacing-md) * 2);
+  padding-bottom: var(--mantine-spacing-xl);
+  border-top: 1px solid light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-5));
+}
+
+/* Mobile: le menu desktop est caché par Mantine (visibleFrom=sm) */
+@media (max-width: 48em) {
+  .link { height: 42px; width: 100%; }
+}
